@@ -261,6 +261,65 @@
             border-radius: 1rem;
             padding: 1.5rem;
             border: 1px solid var(--border);
+            scroll-margin-top: 6rem;
+        }
+
+        /* Exercise prescription (cheat sheet) */
+        .exercise-target-grid {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-bottom: 0.75rem;
+        }
+
+        .target-item {
+            flex: 1 1 90px;
+            min-width: 80px;
+            background: rgba(99, 102, 241, 0.12);
+            border: 1px solid rgba(99, 102, 241, 0.4);
+            border-radius: 0.5rem;
+            padding: 0.5rem 0.75rem;
+            text-align: center;
+        }
+
+        .target-item.weight {
+            background: rgba(245, 158, 11, 0.12);
+            border-color: rgba(245, 158, 11, 0.5);
+        }
+
+        .target-label {
+            display: block;
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-secondary);
+        }
+
+        .target-value {
+            display: block;
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--primary);
+            line-height: 1.3;
+        }
+
+        .target-item.weight .target-value {
+            color: var(--accent);
+        }
+
+        .target-hint {
+            margin: -0.25rem 0 0.75rem;
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+        }
+
+        .exercise-log-label {
+            margin-bottom: 0.5rem;
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
         }
 
         .workout-header {
@@ -908,6 +967,7 @@
                 document.querySelector('.tab-btn:nth-child(1)').classList.add('active');
                 document.getElementById('dashboard').classList.add('active');
                 updateDashboard();
+                renderWorkoutDay();
             } else if (tabName === 'planner') {
                 document.querySelector('.tab-btn:nth-child(2)').classList.add('active');
                 document.getElementById('planner').classList.add('active');
@@ -1050,7 +1110,7 @@
             for (let day = 0; day < 7; day++) {
                 const dayCard = document.createElement('div');
                 dayCard.className = 'day-card';
-                dayCard.onclick = () => selectDay(day + 1);
+                dayCard.onclick = () => selectDay(day + 1, true);
                 
                 const key = `week${currentWeek}_day${day + 1}`;
                 const dayData = workoutData[key] || {};
@@ -1093,10 +1153,38 @@
         }
 
         // Select day
-        function selectDay(day) {
+        function selectDay(day, scrollToDetail = false) {
             currentDay = day;
             renderWeekGrid();
             renderWorkoutDay();
+
+            if (scrollToDetail) {
+                const workoutDetail = document.querySelector('.workout-detail');
+                if (workoutDetail) {
+                    workoutDetail.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            }
+        }
+
+        // Target load: use Plan Editor weight, fallback to last week's logged weight
+        function getTargetWeight(exerciseName, lastWeekExercise) {
+            const planExercise = allExercises.find(ex => ex.name === exerciseName);
+            const planWeight = planExercise ? parseFloat(planExercise.weight) : NaN;
+            if (!isNaN(planWeight) && planWeight > 0) return planWeight;
+
+            const lastWeight = lastWeekExercise ? parseFloat(lastWeekExercise.weight) : NaN;
+            if (!isNaN(lastWeight) && lastWeight > 0) return lastWeight;
+
+            return null;
+        }
+
+        // Split prescription into sets and reps
+        function getPrescription(exercise) {
+            const parts = exercise.sets.split('×');
+            if (parts.length > 1) {
+                return { sets: parts[0].trim(), reps: exercise.reps || parts[1].trim() };
+            }
+            return { sets: exercise.sets, reps: exercise.reps || '-' };
         }
 
         // Render workout day with progress comparison
@@ -1144,6 +1232,8 @@
                         const completed = exerciseData.completed || false;
                         const lastWeekExerciseData = lastWeekData[currentDay]?.exercises?.[index] || {};
                         const lastWeekCompleted = lastWeekExerciseData.completed || false;
+                        const targetWeight = getTargetWeight(exercise.name, lastWeekExerciseData);
+                        const prescription = getPrescription(exercise);
                         
                         return `
                             <div class="exercise-card" style="position: relative;">
@@ -1155,21 +1245,36 @@
                                     <div class="exercise-info">
                                         <div class="exercise-name">${exercise.name}</div>
                                         <div class="exercise-equipment">${exercise.equipment}</div>
-                                        <div class="exercise-target">Target: ${exercise.sets}</div>
                                     </div>
-                                    <div class="exercise-stats">
-                                        <div class="stat-input">
-                                            <label>Bobot:</label>
-                                            <input type="number" value="${exerciseData.weight || ''}" oninput="updateExerciseData(${currentWeek}, ${currentDay}, ${index}, 'weight', parseFloat(this.value) || 0)" placeholder="kg">
-                                        </div>
-                                        <div class="stat-input">
-                                            <label>Sets:</label>
-                                            <input type="text" value="${exerciseData.sets || ''}" oninput="updateExerciseData(${currentWeek}, ${currentDay}, ${index}, 'sets', this.value)" placeholder="1/3">
-                                        </div>
-                                        <div class="stat-input">
-                                            <label>Reps:</label>
-                                            <input type="text" value="${exerciseData.reps || ''}" oninput="updateExerciseData(${currentWeek}, ${currentDay}, ${index}, 'reps', this.value)" placeholder="8/12">
-                                        </div>
+                                </div>
+                                <div class="exercise-target-grid">
+                                    <div class="target-item weight">
+                                        <span class="target-label">Beban</span>
+                                        <span class="target-value">${targetWeight !== null ? targetWeight + ' kg' : '—'}</span>
+                                    </div>
+                                    <div class="target-item">
+                                        <span class="target-label">Sets</span>
+                                        <span class="target-value">${prescription.sets}</span>
+                                    </div>
+                                    <div class="target-item">
+                                        <span class="target-label">Reps</span>
+                                        <span class="target-value">${prescription.reps}</span>
+                                    </div>
+                                </div>
+                                ${targetWeight === null ? '<div class="target-hint">Beban target belum diatur — isi di Plan Editor atau otomatis memakai beban minggu lalu.</div>' : ''}
+                                <div class="exercise-log-label">Catat Aktual</div>
+                                <div class="exercise-stats">
+                                    <div class="stat-input">
+                                        <label>Bobot:</label>
+                                        <input type="number" value="${exerciseData.weight || ''}" oninput="updateExerciseData(${currentWeek}, ${currentDay}, ${index}, 'weight', parseFloat(this.value) || 0)" placeholder="kg">
+                                    </div>
+                                    <div class="stat-input">
+                                        <label>Sets:</label>
+                                        <input type="text" value="${exerciseData.sets || ''}" oninput="updateExerciseData(${currentWeek}, ${currentDay}, ${index}, 'sets', this.value)" placeholder="1/3">
+                                    </div>
+                                    <div class="stat-input">
+                                        <label>Reps:</label>
+                                        <input type="text" value="${exerciseData.reps || ''}" oninput="updateExerciseData(${currentWeek}, ${currentDay}, ${index}, 'reps', this.value)" placeholder="8/12">
                                     </div>
                                 </div>
                                 <button class="complete-btn ${completed ? 'completed' : ''}" onclick="toggleExerciseCompletion(${currentWeek}, ${currentDay}, ${index})" ${completed ? 'disabled' : ''}>${completed ? 'Selesai' : 'Tandai Selesai'}</button>
@@ -1446,26 +1551,58 @@
             
             allExercises = uniqueExercises;
             
-            // Save initial plan
-            savePlan();
+            // Save initial plan without showing a toast
+            localStorage.setItem('gymTrackerPlan', JSON.stringify({
+                name: 'athletic-lean',
+                exercises: allExercises
+            }));
+        }
+
+        // Add exercises that are missing from an older saved plan (e.g. day 4-7)
+        function syncPlanWithProgram() {
+            const knownNames = new Set(allExercises.map(ex => ex.name));
+
+            for (let day = 1; day <= 7; day++) {
+                getExercisesForDay(day).forEach(exercise => {
+                    if (!knownNames.has(exercise.name)) {
+                        allExercises.push({
+                            name: exercise.name,
+                            equipment: exercise.equipment,
+                            weight: '',
+                            sets: exercise.sets,
+                            reps: exercise.reps
+                        });
+                        knownNames.add(exercise.name);
+                    }
+                });
+            }
+
+            localStorage.setItem('gymTrackerPlan', JSON.stringify({
+                name: 'athletic-lean',
+                exercises: allExercises
+            }));
         }
 
         // Load saved plan or initialize
         function loadPlanData() {
             const savedPlan = localStorage.getItem('gymTrackerPlan');
             if (savedPlan) {
-                const plan = JSON.parse(savedPlan);
-                if (plan.name === 'athletic-lean') {
-                    allExercises = plan.exercises;
+                try {
+                    const plan = JSON.parse(savedPlan);
+                    if (plan.name === 'athletic-lean' && Array.isArray(plan.exercises)) {
+                        allExercises = plan.exercises;
+                    }
+                } catch (e) {
+                    allExercises = [];
                 }
             }
             
             if (allExercises.length === 0) {
                 initializeProgram();
             }
-            
+
+            syncPlanWithProgram();
             initPlanEditor();
-            loadPlan();
         }
 
     </script>
