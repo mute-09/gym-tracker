@@ -340,6 +340,45 @@
             border-bottom: 1px solid var(--border);
         }
 
+        .workout-meta {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: flex-end;
+            gap: .5rem .75rem;
+            margin-bottom: .5rem;
+        }
+
+        .today-badge {
+            display: inline-flex;
+            align-items: center;
+            white-space: nowrap;
+            padding: .25rem .75rem;
+            border-radius: .5rem;
+            background: rgba(16,185,129,.2);
+            border: 1px solid var(--secondary);
+            color: var(--secondary);
+            font-size: .75rem;
+            font-weight: 600;
+        }
+
+        .workout-progress {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: .25rem;
+        }
+
+        .workout-progress-label {
+            font-size: .875rem;
+            color: var(--text-secondary);
+        }
+
+        .workout-progress-bar {
+            width: 100px;
+            height: 6px;
+        }
+
         .workout-title {
             font-size: 1.25rem;
             font-weight: 600;
@@ -973,6 +1012,22 @@
             .exercise-stats {
                 width: 100%;
                 justify-content: space-between;
+            }
+            .workout-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .workout-meta {
+                justify-content: flex-start;
+                width: 100%;
+                margin-top: .25rem;
+            }
+            .workout-progress {
+                align-items: flex-start;
+            }
+            .workout-progress-bar {
+                width: 100%;
+                max-width: 160px;
             }
             .exercise-grid {
                 display: flex;
@@ -2120,13 +2175,13 @@
                         <div class="workout-date">${weekLabel} ${currentWeek} | ${dateText}</div>
                     </div>
                     <div style="text-align: right;">
-                        <div style="display: flex; gap: 1rem; align-items: center; justify-content: flex-end; margin-bottom: 0.5rem;">
+                        <div class="workout-meta">
                             ${getTodayDayNumber() === currentDay ? 
-                                `<div style="background: rgba(16, 185, 129, 0.2); border: 1px solid var(--secondary); color: var(--secondary); padding: 0.25rem 0.75rem; border-radius: 0.5rem; font-size: 0.75rem; font-weight: 600;">${t('label_today')}</div>` : ''
+                                `<span class="today-badge">${t('label_today')}</span>` : ''
                             }
-                            <div style="text-align: right;">
-                                <div style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 0.25rem;">${t('label_progress')}</div>
-                                <div class="progress-bar" style="width: 100px; height: 6px;">
+                            <div class="workout-progress">
+                                <div class="workout-progress-label">${t('label_progress')}</div>
+                                <div class="progress-bar workout-progress-bar">
                                     <div class="progress-fill" style="width: ${progress}%"></div>
                                 </div>
                             </div>
