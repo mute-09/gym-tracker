@@ -700,7 +700,7 @@
 
         .exercise-grid {
             display: grid;
-            grid-template-columns: minmax(180px, 1.5fr) minmax(90px, 0.75fr) minmax(110px, 1fr) minmax(110px, 1fr);
+            grid-template-columns: 40px minmax(180px, 1.5fr) minmax(90px, 0.7fr) minmax(110px, 1fr) minmax(110px, 1fr) minmax(80px, 0.8fr) 60px;
             gap: 0.75rem;
             align-items: start;
             border: 1px solid var(--border);
@@ -755,6 +755,101 @@
 
         .exercise-select {
             cursor: pointer;
+        }
+
+        .plan-day-tabs {
+            display: flex;
+            gap: .35rem;
+            margin-bottom: 1rem;
+            overflow-x: auto;
+            padding-bottom: .25rem;
+        }
+
+        .plan-day-tab {
+            padding: .45rem .8rem;
+            border: 1px solid var(--border);
+            background: var(--bg-card);
+            color: var(--text-secondary);
+            border-radius: .5rem;
+            font-size: .75rem;
+            font-weight: 600;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .plan-day-tab:hover {
+            color: var(--text);
+        }
+
+        .plan-day-tab.active {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: #fff;
+        }
+
+        .plan-row {
+            cursor: grab;
+            transition: opacity .15s ease, border-color .15s ease;
+        }
+
+        .plan-row.dragging {
+            opacity: .45;
+        }
+
+        .plan-row.drag-over {
+            border-top: 2px solid var(--primary);
+        }
+
+        .row-handle {
+            display: flex;
+            align-items: center;
+            gap: .35rem;
+        }
+
+        .drag-handle {
+            cursor: grab;
+            user-select: none;
+            color: var(--text-secondary);
+            font-size: .9rem;
+            letter-spacing: -.08em;
+        }
+
+        .reorder-btn {
+            border: 1px solid var(--border);
+            background: var(--bg-card);
+            color: var(--text-secondary);
+            border-radius: .25rem;
+            width: 1.5rem;
+            height: 1.5rem;
+            font-size: .75rem;
+            cursor: pointer;
+        }
+
+        .delete-btn {
+            border: 1px solid var(--danger);
+            background: transparent;
+            color: var(--danger);
+            border-radius: .35rem;
+            padding: .25rem .55rem;
+            font-size: .7rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .delete-btn:hover {
+            background: var(--danger);
+            color: #fff;
+        }
+
+        .plan-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: .5rem;
+            margin-top: 1rem;
+        }
+
+        .plan-actions .save-plan-btn {
+            margin-top: 0;
         }
 
         .save-plan-btn {
@@ -910,6 +1005,22 @@
             }
             .exercise-row > .row-name {
                 grid-column: 1 / -1;
+            }
+            .exercise-row > .row-handle,
+            .exercise-row > .row-delete {
+                grid-column: 1 / -1;
+            }
+            .exercise-row > .row-delete::before {
+                display: block;
+                margin-bottom: 0.25rem;
+                font-size: 0.65rem;
+                font-weight: 600;
+                color: var(--text-secondary);
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+            }
+            .exercise-row > .row-handle::before {
+                display: none;
             }
             .exercise-row > *::before {
                 content: attr(data-label);
@@ -1144,12 +1255,25 @@
                 </select>
             </div>
 
+            <div class="plan-day-tabs" role="tablist" aria-label="Pilih hari rencana" data-i18n-attr="aria-label:plan_day_aria">
+                <button class="plan-day-tab" data-day="1" data-i18n="day_1" onclick="setPlanDay(1)" role="tab">Senin</button>
+                <button class="plan-day-tab" data-day="2" data-i18n="day_2" onclick="setPlanDay(2)" role="tab">Selasa</button>
+                <button class="plan-day-tab" data-day="3" data-i18n="day_3" onclick="setPlanDay(3)" role="tab">Rabu</button>
+                <button class="plan-day-tab" data-day="4" data-i18n="day_4" onclick="setPlanDay(4)" role="tab">Kamis</button>
+                <button class="plan-day-tab" data-day="5" data-i18n="day_5" onclick="setPlanDay(5)" role="tab">Jumat</button>
+                <button class="plan-day-tab" data-day="6" data-i18n="day_6" onclick="setPlanDay(6)" role="tab">Sabtu</button>
+                <button class="plan-day-tab" data-day="7" data-i18n="day_7" onclick="setPlanDay(7)" role="tab">Minggu</button>
+            </div>
+
             <div class="exercise-grid" aria-label="Daftar rencana latihan" data-i18n-attr="aria-label:aria_plan_list">
                 <div class="exercise-grid-header" aria-hidden="true">
+                    <div></div>
                     <div data-i18n="col_name">Nama Latihan</div>
                     <div data-i18n="col_weight">Bobot (kg)</div>
                     <div data-i18n="col_sets">Sets</div>
                     <div data-i18n="col_reps">Reps</div>
+                    <div data-i18n="col_day">Hari</div>
+                    <div></div>
                 </div>
 
                 <div id="exercisesList">
@@ -1157,7 +1281,10 @@
                 </div>
             </div>
 
-            <button class="save-plan-btn" onclick="savePlan()" data-i18n="save_program">Simpan Program</button>
+            <div class="plan-actions">
+                <button class="save-plan-btn" onclick="addExercise()" data-i18n="btn_add_exercise">Tambah Latihan</button>
+                <button class="save-plan-btn" onclick="savePlan()" data-i18n="save_program">Simpan Program</button>
+            </div>
         </div>
     </div>
 
@@ -1210,6 +1337,15 @@
                 col_sets: 'Sets',
                 col_reps: 'Reps',
                 save_program: 'Simpan Program',
+                btn_add_exercise: 'Tambah Latihan',
+                btn_delete_exercise: 'Hapus',
+                confirm_delete_exercise: 'Hapus latihan ini dari rencana?',
+                drag_handle_aria: 'Seret untuk mengatur urutan',
+                reorder_up_aria: 'Naikkan urutan',
+                reorder_down_aria: 'Turunkan urutan',
+                col_day: 'Hari',
+                empty_day_plan: 'Belum ada latihan untuk hari ini. Klik Tambah Latihan.',
+                plan_day_aria: 'Pilih hari rencana',
                 aria_close: 'Tutup',
                 aria_location: 'Lokasi latihan',
                 aria_plan_list: 'Daftar rencana latihan',
@@ -1298,6 +1434,15 @@
                 col_sets: 'Sets',
                 col_reps: 'Reps',
                 save_program: 'Save Program',
+                btn_add_exercise: 'Add Exercise',
+                btn_delete_exercise: 'Delete',
+                confirm_delete_exercise: 'Remove this exercise from the plan?',
+                drag_handle_aria: 'Drag to reorder',
+                reorder_up_aria: 'Move up',
+                reorder_down_aria: 'Move down',
+                col_day: 'Day',
+                empty_day_plan: 'No exercises for this day yet. Click Add Exercise.',
+                plan_day_aria: 'Select plan day',
                 aria_close: 'Close',
                 aria_location: 'Workout location',
                 aria_plan_list: 'Program exercise list',
@@ -1410,11 +1555,19 @@
         let currentDay = null;
         let allExercises = [];
         let locationMode = localStorage.getItem('gymTrackerLocation') || 'gym';
+        let exerciseIdCounter = 0;
+        let currentPlanDay = null;
+        let draggedId = null;
+
+        function genExerciseId() {
+            exerciseIdCounter += 1;
+            return `ex_${exerciseIdCounter}_${Date.now()}`;
+        }
 
         // Initialize app
         document.addEventListener('DOMContentLoaded', function() {
-            loadStoredData();
             loadPlanData();
+            loadStoredData();
             document.documentElement.lang = currentLang;
             applyTranslations();
             updateLangToggleUI();
@@ -1454,11 +1607,11 @@
             const lastWeekData = {};
             
             for (let day = 1; day <= 7; day++) {
-                const key = getDayStorageKey(lastWeek, day, locationMode);
+                const key = `week${lastWeek}_day${day}`;
                 if (workoutData[key]) {
                     lastWeekData[day] = {
-                        completed: workoutData[key].completed || false,
-                        exercises: workoutData[key].exercises || []
+                        completed: isDayCompleteAny(lastWeek, day),
+                        exercises: workoutData[key].exercises || {}
                     };
                 }
             }
@@ -1540,6 +1693,61 @@
                 .sort((a, b) => a.localeCompare(b, 'id', { sensitivity: 'base' }));
         }
 
+        // Plan Editor state helpers
+        function setPlanDay(day) {
+            currentPlanDay = day;
+            renderPlanEditor();
+        }
+
+        function updatePlanDayTabs() {
+            document.querySelectorAll('.plan-day-tab').forEach(tab => {
+                tab.classList.toggle('active', Number(tab.dataset.day) === currentPlanDay);
+            });
+        }
+
+        // Initialize plan editor
+        function initPlanEditor() {
+            const list = document.getElementById('exercisesList');
+            if (list && list.dataset.dragBound !== 'true') {
+                list.addEventListener('dragstart', event => {
+                    const row = event.target.closest('.plan-row');
+                    if (!row) return;
+                    draggedId = row.dataset.id;
+                    row.classList.add('dragging');
+                    event.dataTransfer.effectAllowed = 'move';
+                });
+
+                list.addEventListener('dragover', event => {
+                    event.preventDefault();
+                    const row = event.target.closest('.plan-row');
+                    document.querySelectorAll('.plan-row.drag-over').forEach(el => el.classList.remove('drag-over'));
+                    if (row && row.dataset.id !== draggedId) row.classList.add('drag-over');
+                });
+
+                list.addEventListener('dragleave', event => {
+                    const row = event.target.closest('.plan-row');
+                    if (row) row.classList.remove('drag-over');
+                });
+
+                list.addEventListener('drop', event => {
+                    event.preventDefault();
+                    const row = event.target.closest('.plan-row');
+                    if (row && draggedId && row.dataset.id !== draggedId) {
+                        reorderExercise(draggedId, row.dataset.id);
+                    }
+                });
+
+                list.addEventListener('dragend', () => {
+                    draggedId = null;
+                    document.querySelectorAll('.plan-row').forEach(el => el.classList.remove('dragging', 'drag-over'));
+                });
+
+                list.dataset.dragBound = 'true';
+            }
+
+            renderPlanEditor();
+        }
+
         function getExerciseOptions(selected) {
             const available = getAvailableExercises();
             let html = '';
@@ -1552,53 +1760,135 @@
             return html;
         }
 
-        // Initialize plan editor
-        function initPlanEditor() {
-            const exercisesList = document.getElementById('exercisesList');
-            exercisesList.innerHTML = '';
-            
-            allExercises.forEach((exercise, index) => {
-                const row = document.createElement('div');
-                row.className = 'exercise-row';
-                row.innerHTML = `
-                    <div class="row-name" data-label="${t('col_name')}"><select class="exercise-cell-input exercise-select" onchange="updateExercise(${index}, 'name', this.value)">${getExerciseOptions(exercise.name)}</select></div>
-                    <div class="row-weight" data-label="${t('col_weight')}"><input type="number" min="0" step="0.5" class="exercise-cell-input" value="${exercise.weight ?? ''}" oninput="updateExercise(${index}, 'weight', parseFloat(this.value) || 0)" placeholder="${t('placeholder_kg')}"></div>
-                    <div class="row-sets" data-label="${t('col_sets')}"><input type="text" class="exercise-cell-input" value="${escapeHtml(exercise.sets ?? '')}" oninput="updateExercise(${index}, 'sets', this.value)" placeholder="${t('placeholder_sets_example')}"></div>
-                    <div class="row-reps" data-label="${t('col_reps')}"><input type="text" class="exercise-cell-input" value="${escapeHtml(exercise.reps ?? '')}" oninput="updateExercise(${index}, 'reps', this.value)" placeholder="${t('placeholder_reps_example')}"></div>
-                `;
-                exercisesList.appendChild(row);
-            });
+        function renderPlanEditor() {
+            const list = document.getElementById('exercisesList');
+            if (!list) return;
+
+            const dayExercises = allExercises.filter(exercise => exercise.day === currentPlanDay);
+
+            if (dayExercises.length === 0) {
+                list.innerHTML = `<div class="empty-location">${t('empty_day_plan')}</div>`;
+                updatePlanDayTabs();
+                return;
+            }
+
+            list.innerHTML = dayExercises.map(exercise => `
+                <div class="exercise-row plan-row" draggable="true" data-id="${escapeHtml(exercise.id)}" data-day="${escapeHtml(exercise.day)}">
+                    <div class="row-handle">
+                        <span class="drag-handle" aria-label="${t('drag_handle_aria')}">⋮⋮</span>
+                        <button class="reorder-btn" onclick="moveExerciseUp('${escapeHtml(exercise.id)}')" aria-label="${t('reorder_up_aria')}">↑</button>
+                        <button class="reorder-btn" onclick="moveExerciseDown('${escapeHtml(exercise.id)}')" aria-label="${t('reorder_down_aria')}">↓</button>
+                    </div>
+                    <div class="row-name" data-label="${t('col_name')}"><select class="exercise-cell-input exercise-select" onchange="updateExercise('${escapeHtml(exercise.id)}', 'name', this.value)">${getExerciseOptions(exercise.name)}</select></div>
+                    <div class="row-weight" data-label="${t('col_weight')}"><input type="number" min="0" step="0.5" class="exercise-cell-input" value="${escapeHtml(exercise.weight ?? '')}" oninput="updateExercise('${escapeHtml(exercise.id)}', 'weight', parseFloat(this.value) || 0)" placeholder="${t('placeholder_kg')}"></div>
+                    <div class="row-sets" data-label="${t('col_sets')}"><input type="text" class="exercise-cell-input" value="${escapeHtml(exercise.sets ?? '')}" placeholder="${t('placeholder_sets_example')}" oninput="updateExercise('${escapeHtml(exercise.id)}', 'sets', this.value)"></div>
+                    <div class="row-reps" data-label="${t('col_reps')}"><input type="text" class="exercise-cell-input" value="${escapeHtml(exercise.reps ?? '')}" placeholder="${t('placeholder_reps_example')}" oninput="updateExercise('${escapeHtml(exercise.id)}', 'reps', this.value)"></div>
+                    <div class="row-day" data-label="${t('col_day')}"><select class="exercise-cell-input exercise-select" onchange="moveExercise('${escapeHtml(exercise.id)}', parseInt(this.value, 10))">${[1,2,3,4,5,6,7].map(day => `<option value="${day}" ${day === exercise.day ? 'selected' : ''}>${t(`day_${day}`)}</option>`).join('')}</select></div>
+                    <div class="row-delete" data-label="${t('btn_delete_exercise')}"><button class="delete-btn" onclick="deleteExercise('${escapeHtml(exercise.id)}')">${t('btn_delete_exercise')}</button></div>
+                </div>
+            `).join('');
+
+            updatePlanDayTabs();
         }
 
-        // Update exercise data
-        function updateExercise(index, field, value) {
-            allExercises[index][field] = value;
-            localStorage.setItem('gymTrackerPlan', JSON.stringify({
-                name: document.getElementById('programSelector').value,
-                exercises: allExercises
-            }));
+        function addExercise() {
+            const available = getAvailableExercises();
+            const name = available[0] || 'Chest Press Machine';
+            let definition = null;
+            for (let day = 1; day <= 7 && !definition; day++) {
+                definition = getDefaultExercisesForDay(day).find(item => item.name === name) || null;
+            }
+            allExercises.push({
+                id: genExerciseId(),
+                name,
+                day: currentPlanDay,
+                equipment: definition?.equipment || 'Gym',
+                weight: '',
+                sets: definition?.sets || '',
+                reps: definition?.reps || ''
+            });
+            savePlan();
+            renderPlanEditor();
+        }
+
+        function deleteExercise(id) {
+            if (!confirm(t('confirm_delete_exercise'))) return;
+
+            allExercises = allExercises.filter(exercise => exercise.id !== id);
+            for (let week = 1; week <= 12; week++) {
+                for (let day = 1; day <= 7; day++) {
+                    const key = `week${week}_day${day}`;
+                    if (workoutData[key]?.exercises && workoutData[key].exercises[id]) {
+                        delete workoutData[key].exercises[id];
+                    }
+                }
+            }
+            savePlan();
+            saveData();
+            renderPlanEditor();
+        }
+
+        function updateExercise(id, field, value) {
+            const exercise = allExercises.find(item => item.id === id);
+            if (!exercise) return;
+            exercise[field] = value;
+            savePlan();
+        }
+
+        function moveExercise(id, newDay) {
+            const exercise = allExercises.find(item => item.id === id);
+            if (!exercise || Number.isNaN(newDay)) return;
+            exercise.day = newDay;
+            savePlan();
+            renderPlanEditor();
+        }
+
+        function moveExerciseUp(id) {
+            reorderExerciseByDirection(id, -1);
+        }
+
+        function moveExerciseDown(id) {
+            reorderExerciseByDirection(id, 1);
+        }
+
+        function reorderExerciseByDirection(id, direction) {
+            const exercise = allExercises.find(item => item.id === id);
+            if (!exercise) return;
+            const dayIds = allExercises.filter(item => item.day === exercise.day).map(item => item.id);
+            const index = dayIds.indexOf(id);
+            const targetId = dayIds[index + direction];
+            const target = allExercises.find(item => item.id === targetId);
+            if (!target) return;
+
+            const fromIndex = allExercises.indexOf(exercise);
+            const toIndex = allExercises.indexOf(target);
+            [allExercises[fromIndex], allExercises[toIndex]] = [allExercises[toIndex], allExercises[fromIndex]];
+            savePlan();
+            renderPlanEditor();
+        }
+
+        function reorderExercise(dragId, targetId) {
+            const drag = allExercises.find(item => item.id === dragId);
+            const target = allExercises.find(item => item.id === targetId);
+            if (!drag || !target || drag.day !== target.day) return;
+
+            const fromIndex = allExercises.indexOf(drag);
+            allExercises.splice(fromIndex, 1);
+            const toIndex = allExercises.indexOf(target);
+            allExercises.splice(toIndex, 0, drag);
+            savePlan();
+            renderPlanEditor();
         }
 
         // Save plan
         function savePlan() {
             const savedPlan = {
+                version: 2,
                 name: document.getElementById('programSelector').value,
                 exercises: allExercises
             };
             localStorage.setItem('gymTrackerPlan', JSON.stringify(savedPlan));
             showToast(t('toast_plan_saved'), 'success');
-        }
-
-        // Load plan from localStorage
-        function loadPlan() {
-            const savedPlan = localStorage.getItem('gymTrackerPlan');
-            if (savedPlan) {
-                const plan = JSON.parse(savedPlan);
-                if (plan.name === 'athletic-lean') {
-                    allExercises = plan.exercises;
-                    initPlanEditor();
-                }
-            }
         }
 
         // Fun mode toggle
@@ -1621,16 +1911,11 @@
             
             for (let week = 1; week <= 12; week++) {
                 for (let day = 1; day <= 7; day++) {
-                    let completedInAnyMode = false;
+                    const completedInAnyMode = isDayCompleteAny(week, day);
+                    const dayData = workoutData[`week${week}_day${day}`];
 
-                    for (const mode of ['gym', 'home']) {
-                        const dayData = workoutData[getDayStorageKey(week, day, mode)];
-                        if (!dayData) continue;
-
-                        if (dayData.completed) completedInAnyMode = true;
-                        if (dayData.exercises) {
-                            exercisesDone += dayData.exercises.filter(ex => ex && ex.completed).length;
-                        }
+                    if (dayData?.exercises) {
+                        exercisesDone += Object.values(dayData.exercises).filter(ex => ex && ex.completed).length;
                         totalVolume += dayData.volume || 0;
                     }
 
@@ -1727,8 +2012,8 @@
         }
 
         // Target load: use Plan Editor weight, fallback to last week's logged weight
-        function getTargetWeight(exerciseName, lastWeekExercise) {
-            const planExercise = allExercises.find(ex => ex.name === exerciseName);
+        function getTargetWeight(exercise, lastWeekExercise) {
+            const planExercise = allExercises.find(ex => ex.id === exercise.id);
             const planWeight = planExercise ? parseFloat(planExercise.weight) : NaN;
             if (!isNaN(planWeight) && planWeight > 0) return planWeight;
 
@@ -1814,13 +2099,12 @@
 
             if (!currentDay) currentDay = getTodayDayNumber();
 
-            const key = getDayStorageKey(currentWeek, currentDay, locationMode);
+            const key = `week${currentWeek}_day${currentDay}`;
             const dayData = workoutData[key] || {};
-            const exercises = getExercisesForDay(currentDay);
+            if (!dayData.exercises) dayData.exercises = {};
+            const exercises = getVisibleExercises(currentDay);
             const lastWeekData = getLastWeekData();
-            const completedCount = exercises.filter((_, index) =>
-                dayData.exercises && dayData.exercises[index] && dayData.exercises[index].completed
-            ).length;
+            const completedCount = exercises.filter(exercise => dayData.exercises[exercise.id]?.completed).length;
             const progress = exercises.length ? Math.round((completedCount / exercises.length) * 100) : 0;
             
             // Get current day name
@@ -1855,12 +2139,12 @@
                     <button class="location-btn ${locationMode === 'home' ? 'active' : ''}" onclick="setLocationMode('home')" role="tab" aria-selected="${locationMode === 'home'}">${t('mode_home')}</button>
                 </div>
                 <div class="exercise-list">
-                    ${exercises.length ? exercises.map((exercise, index) => {
-                        const exerciseData = dayData.exercises && dayData.exercises[index] || {};
+                    ${exercises.length ? exercises.map(exercise => {
+                        const exerciseData = dayData.exercises?.[exercise.id] || {};
                         const completed = exerciseData.completed || false;
-                        const lastWeekExerciseData = lastWeekData[currentDay]?.exercises?.[index] || {};
+                        const lastWeekExerciseData = lastWeekData[currentDay]?.exercises?.[exercise.id] || {};
                         const lastWeekCompleted = lastWeekExerciseData.completed || false;
-                        const targetWeight = getTargetWeight(exercise.name, lastWeekExerciseData);
+                        const targetWeight = getTargetWeight(exercise, lastWeekExerciseData);
                         const prescription = getPrescription(exercise);
                         const equipmentLabel = exercise.equipment === 'Recovery' ? t('equip_recovery') : (exercise.equipment === 'Semua' ? t('equip_all') : exercise.equipment);
                         
@@ -1896,18 +2180,18 @@
                                 <div class="exercise-stats">
                                     <div class="stat-input">
                                         <label>${t('input_weight')}</label>
-                                        <input type="number" value="${exerciseData.weight || ''}" oninput="updateExerciseData(${currentWeek}, ${currentDay}, ${index}, 'weight', parseFloat(this.value) || 0)" placeholder="${t('placeholder_kg')}">
+                                        <input type="number" value="${exerciseData.weight || ''}" oninput="updateExerciseData(${currentWeek}, ${currentDay}, '${exercise.id}', 'weight', parseFloat(this.value) || 0)" placeholder="${t('placeholder_kg')}">
                                     </div>
                                     <div class="stat-input">
                                         <label>${t('input_sets')}</label>
-                                        <input type="text" value="${exerciseData.sets || ''}" oninput="updateExerciseData(${currentWeek}, ${currentDay}, ${index}, 'sets', this.value)" placeholder="1/3">
+                                        <input type="text" value="${exerciseData.sets || ''}" oninput="updateExerciseData(${currentWeek}, ${currentDay}, '${exercise.id}', 'sets', this.value)" placeholder="1/3">
                                     </div>
                                     <div class="stat-input">
                                         <label>${t('input_reps')}</label>
-                                        <input type="text" value="${exerciseData.reps || ''}" oninput="updateExerciseData(${currentWeek}, ${currentDay}, ${index}, 'reps', this.value)" placeholder="8/12">
+                                        <input type="text" value="${exerciseData.reps || ''}" oninput="updateExerciseData(${currentWeek}, ${currentDay}, '${exercise.id}', 'reps', this.value)" placeholder="8/12">
                                     </div>
                                 </div>
-                                <button class="complete-btn ${completed ? 'completed' : ''}" onclick="toggleExerciseCompletion(${currentWeek}, ${currentDay}, ${index})" ${completed ? 'disabled' : ''}>${completed ? t('btn_done') : t('btn_mark_done')}</button>
+                                <button class="complete-btn ${completed ? 'completed' : ''}" onclick="toggleExerciseCompletion(${currentWeek}, ${currentDay}, '${exercise.id}')" ${completed ? 'disabled' : ''}>${completed ? t('btn_done') : t('btn_mark_done')}</button>
                             </div>
                         `;
                     }).join('') : `<div class="empty-location">${t('empty_location')}</div>`}
@@ -1985,7 +2269,7 @@
             }
         };
 
-        // Migration from the old mixed gym/home list to separate Gym/Home storage keys
+        // Legacy unified-array layout -> current day/location slots
         const LEGACY_INDEX_MAP = {
             1: { 0: [['gym', 0]], 1: [['gym', 1]], 2: [['gym', 2]], 3: [['home', 3]], 4: [['home', 4]], 5: [['home', 5]], 6: [['home', 6]] },
             2: { 0: [['gym', 0]], 1: [['home', 1]], 2: [['gym', 2]], 3: [['home', 2]], 4: [['home', 3]], 5: [['home', 4]] },
@@ -1993,114 +2277,237 @@
             4: { 0: [['gym', 0]], 1: [['home', 1]], 2: [['gym', 2]], 3: [['home', 2]], 4: [['gym', 3]], 5: [['home', 4]], 6: [['home', 5]], 7: [['home', 6]], 8: [['home', 7]] },
             5: { 0: [['gym', 0]], 1: [['home', 1]], 2: [['home', 2]], 3: [['home', 3]], 4: [['home', 4]], 5: [['home', 5]] },
             6: { 0: [['gym', 0]], 1: [['home', 0]] },
-            7: { 0: [['home', 0]] }
+            7: { 0: [['gym', 0], ['home', 0]] }
         };
 
-        function getDayStorageKey(week, day, mode = locationMode) {
-            return `week${week}_day${day}_${mode}`;
+        // Default program seed (used for first-run plan and old-data migrations)
+        function getDefaultExercisesForDay(day, mode = null) {
+            const dayPlan = WORKOUT_PROGRAM[day];
+            if (!dayPlan) return [];
+
+            if (mode) {
+                return dayPlan.slots.map(slot => {
+                    const variant = mode === 'gym' ? slot.gym : slot.home;
+                    return { name: variant.name, equipment: variant.equipment, sets: slot.sets, reps: slot.reps };
+                });
+            }
+
+            const seen = new Set();
+            const entries = [];
+            for (const slot of dayPlan.slots) {
+                for (const variant of [slot.gym, slot.home]) {
+                    const key = `${variant.name}|${variant.equipment}`;
+                    if (seen.has(key)) continue;
+                    seen.add(key);
+                    entries.push({ name: variant.name, equipment: variant.equipment, sets: slot.sets, reps: slot.reps });
+                }
+            }
+            return entries;
         }
 
         function recalculateMigratedDay(data, key) {
-            const match = key.match(/week(\d+)_day(\d+)_(gym|home)/);
+            const match = key.match(/week(\d+)_day(\d+)/);
             if (!match) return;
 
-            const [, week, day, mode] = match;
-            const slotCount = WORKOUT_PROGRAM[Number(day)]?.slots?.length || 0;
             const dayData = data[key] || {};
-            const exercises = dayData.exercises || [];
+            const exercises = dayData.exercises && !Array.isArray(dayData.exercises) ? dayData.exercises : {};
 
             let volume = 0;
-            exercises.forEach(exercise => {
+            Object.values(exercises).forEach(exercise => {
                 if (!exercise) return;
                 const weight = parseFloat(exercise.weight) || 0;
                 const sets = parseInt(String(exercise.sets || '').split('/')[0]) || 0;
                 const reps = parseInt(String(exercise.reps || '').split('/')[0]) || 0;
-                volume += weight * sets * reps;
-            });
-
-            const completedCount = exercises.filter(exercise => exercise && exercise.completed).length;
-            const allCompleted = slotCount > 0 && Array.from({ length: slotCount }).every((_, index) => {
-                return exercises[index] && exercises[index].completed;
+                if (weight && sets && reps) volume += weight * sets * reps;
             });
 
             dayData.volume = volume;
-            dayData.completed = allCompleted;
-            dayData.progress = slotCount ? Math.round((completedCount / slotCount) * 100) : 0;
-            dayData.location = mode;
-            data[key] = dayData;
+            dayData.completed = false;
+            dayData.progress = 0;
+            data[key] = { ...dayData, exercises };
         }
 
         function migrateLegacyWorkoutData(parsed) {
             if (!parsed || typeof parsed !== 'object') return {};
 
-            const legacyKeys = Object.keys(parsed).filter(key => /^week\d+_day\d+$/.test(key));
-            if (legacyKeys.length === 0) return parsed;
-
-            localStorage.setItem(`gymTrackerData_backup_${Date.now()}`, JSON.stringify(parsed));
-
-            const migrated = { ...parsed };
             const changedKeys = new Set();
+            const migrated = { ...parsed };
+            let backupCreated = false;
 
-            for (const legacyKey of legacyKeys) {
-                const match = legacyKey.match(/week(\d+)_day(\d+)/);
-                if (!match) continue;
+            for (let week = 1; week <= 12; week++) {
+                for (let day = 1; day <= 7; day++) {
+                    const mainKey = `week${week}_day${day}`;
+                    const sources = [];
 
-                const week = Number(match[1]);
-                const day = Number(match[2]);
-                const legacyDay = parsed[legacyKey] || {};
-                const slotMap = LEGACY_INDEX_MAP[day] || {};
-
-                for (const [oldIndex, targets] of Object.entries(slotMap)) {
-                    const item = legacyDay.exercises && legacyDay.exercises[Number(oldIndex)];
-                    if (!item || Object.keys(item).length === 0) continue;
-
-                    for (const [mode, slot] of targets) {
-                        const newKey = getDayStorageKey(week, day, mode);
-                        if (!migrated[newKey]) migrated[newKey] = { exercises: [] };
-                        if (!migrated[newKey].exercises) migrated[newKey].exercises = [];
-                        if (migrated[newKey].exercises[slot]) continue;
-
-                        migrated[newKey].exercises[slot] = item;
-                        changedKeys.add(newKey);
+                    for (const mode of ['gym', 'home']) {
+                        const modeKey = `${mainKey}_${mode}`;
+                        if (Array.isArray(parsed[modeKey]?.exercises) && parsed[modeKey].exercises.length) {
+                            sources.push({ mode, key: modeKey });
+                        }
                     }
-                }
 
-                delete migrated[legacyKey];
+                    if (Array.isArray(parsed[mainKey]?.exercises) && parsed[mainKey].exercises.length) {
+                        sources.push({ mode: null, key: mainKey });
+                    }
+
+                    if (sources.length === 0) continue;
+
+                    if (!backupCreated) {
+                        localStorage.setItem(`gymTrackerData_backup_${Date.now()}`, JSON.stringify(parsed));
+                        backupCreated = true;
+                    }
+
+                    const previousMain = parsed[mainKey] && typeof parsed[mainKey] === 'object' ? parsed[mainKey] : {};
+                    const targetExercises = previousMain.exercises && !Array.isArray(previousMain.exercises)
+                        ? { ...previousMain.exercises }
+                        : {};
+
+                    for (const source of sources) {
+                        const legacyExercises = parsed[source.key]?.exercises || [];
+
+                        legacyExercises.forEach((entry, index) => {
+                            if (!entry) return;
+
+                            let definition = null;
+                            if (source.mode) {
+                                definition = getDefaultExercisesForDay(day, source.mode)[index];
+                            } else {
+                                const targets = LEGACY_INDEX_MAP[day]?.[index];
+                                if (Array.isArray(targets) && targets.length) {
+                                    const [mode, slot] = targets[0];
+                                    definition = getDefaultExercisesForDay(day, mode)[slot];
+                                }
+                            }
+                            if (!definition) return;
+
+                            const match = allExercises.find(exercise =>
+                                exercise.day === day && exercise.name === definition.name && exercise.equipment === definition.equipment
+                            );
+                            if (!match) return;
+
+                            const previous = targetExercises[match.id] || {};
+                            const merged = { ...previous, ...entry, completed: !!(previous.completed || entry.completed) };
+                            if (previous.weight !== '' && previous.weight != null && (entry.weight === '' || entry.weight == null)) {
+                                merged.weight = previous.weight;
+                            }
+                            targetExercises[match.id] = merged;
+                        });
+
+                        if (source.key !== mainKey) delete migrated[source.key];
+                    }
+
+                    migrated[mainKey] = { ...previousMain, exercises: targetExercises };
+                    changedKeys.add(mainKey);
+                }
             }
 
-            changedKeys.forEach(key => recalculateMigratedDay(migrated, key));
+            if (changedKeys.size === 0) return parsed;
+
+            for (const key of Object.keys(migrated)) {
+                if (/^week\d+_day\d+$/.test(key)) recalculateMigratedDay(migrated, key);
+            }
             return migrated;
         }
 
-        function getAllProgramExercises() {
-            return Object.values(WORKOUT_PROGRAM).flatMap(({ slots }) =>
-                slots.flatMap(slot => [
-                    { ...slot.gym, sets: slot.sets, reps: slot.reps },
-                    { ...slot.home, sets: slot.sets, reps: slot.reps }
-                ])
-            );
+        function migratePlanIfNeeded() {
+            const raw = localStorage.getItem('gymTrackerPlan');
+            let parsed = null;
+            try {
+                parsed = raw ? JSON.parse(raw) : null;
+            } catch (e) {
+                parsed = null;
+            }
+
+            const needsMigration = !parsed
+                || parsed.version !== 2
+                || !Array.isArray(parsed.exercises)
+                || parsed.exercises.some(exercise => !exercise || !exercise.id || !exercise.day);
+
+            if (!needsMigration) {
+                allExercises = parsed.exercises;
+                exerciseIdCounter = allExercises.reduce((max, exercise) => {
+                    const match = String(exercise.id).match(/ex_(\d+)/);
+                    return match ? Math.max(max, parseInt(match[1], 10)) : max;
+                }, 0);
+                return;
+            }
+
+            const oldExercises = Array.isArray(parsed?.exercises) ? parsed.exercises : [];
+            const weightFromOld = {};
+            oldExercises.forEach(exercise => {
+                if (exercise?.name != null) weightFromOld[exercise.name] = exercise.weight ?? '';
+            });
+
+            const seeded = [];
+            const defaultNames = new Set();
+
+            for (let day = 1; day <= 7; day++) {
+                for (const definition of getDefaultExercisesForDay(day)) {
+                    defaultNames.add(definition.name);
+                    seeded.push({
+                        id: genExerciseId(),
+                        name: definition.name,
+                        day,
+                        equipment: definition.equipment,
+                        weight: weightFromOld[definition.name] ?? '',
+                        sets: definition.sets,
+                        reps: definition.reps
+                    });
+                }
+            }
+
+            oldExercises.forEach(exercise => {
+                if (!exercise?.name || defaultNames.has(exercise.name)) return;
+                seeded.push({
+                    id: genExerciseId(),
+                    name: exercise.name,
+                    day: 1,
+                    equipment: exercise.equipment || 'Gym',
+                    weight: exercise.weight ?? '',
+                    sets: exercise.sets ?? '',
+                    reps: exercise.reps ?? ''
+                });
+            });
+
+            allExercises = seeded;
+            localStorage.setItem('gymTrackerPlan', JSON.stringify({
+                version: 2,
+                name: 'athletic-lean',
+                exercises: allExercises
+            }));
         }
 
-        // Get exercises for day
-        function getExercisesForDay(day) {
-            const mode = locationMode;
-            const dayPlan = WORKOUT_PROGRAM[day];
-            if (!dayPlan) return [];
+        // Location filter: raw equipment values are data, only visible filtering uses them
+        function isExerciseForLocation(exercise, mode) {
+            const equipment = exercise.equipment;
+            if (equipment === 'Recovery' || equipment === 'Semua') return true;
+            return mode === 'gym' ? equipment === 'Gym' : equipment === 'Home';
+        }
 
-            return dayPlan.slots.map(slot => {
-                const variant = slot[mode];
-                return {
-                    name: variant.name,
-                    equipment: variant.equipment,
-                    sets: slot.sets,
-                    reps: slot.reps
-                };
-            });
+        function getExercisesForLocation(day, mode = locationMode) {
+            return allExercises.filter(exercise => exercise.day === day && isExerciseForLocation(exercise, mode));
+        }
+
+        function getVisibleExercises(day) {
+            return getExercisesForLocation(day, locationMode);
+        }
+
+        // Plan order is the source of truth for display order
+        function getExercisesForDay(day) {
+            return allExercises.filter(exercise => exercise.day === day);
         }
 
         function isDayComplete(week, day, mode) {
-            const dayData = workoutData[getDayStorageKey(week, day, mode)];
-            return !!(dayData && dayData.completed);
+            const key = `week${week}_day${day}`;
+            const dayData = workoutData[key];
+            if (!dayData?.exercises) return false;
+
+            const visible = getExercisesForLocation(day, mode);
+            return visible.length > 0 && visible.every(exercise => dayData.exercises[exercise.id]?.completed);
+        }
+
+        function isDayCompleteAny(week, day) {
+            return isDayComplete(week, day, 'gym') || isDayComplete(week, day, 'home');
         }
 
         const PROGRAM_KEYS = {
@@ -2117,126 +2524,60 @@
             return WORKOUT_PROGRAM[day] ? t(PROGRAM_KEYS[day]) : t('prog_recovery');
         }
 
-        // Update exercise data
-        function updateExerciseData(week, day, exerciseIndex, field, value) {
-            const key = getDayStorageKey(week, day, locationMode);
+        // Update exercise log data
+        function updateExerciseData(week, day, exerciseId, field, value) {
+            const key = `week${week}_day${day}`;
             if (!workoutData[key]) workoutData[key] = {};
-            if (!workoutData[key].exercises) workoutData[key].exercises = [];
-            if (!workoutData[key].exercises[exerciseIndex]) workoutData[key].exercises[exerciseIndex] = {};
-            
-            workoutData[key].exercises[exerciseIndex][field] = value;
+            if (!workoutData[key].exercises) workoutData[key].exercises = {};
+            if (!workoutData[key].exercises[exerciseId]) workoutData[key].exercises[exerciseId] = {};
+
+            workoutData[key].exercises[exerciseId][field] = value;
             workoutData[key].location = locationMode;
-            
-            // Calculate volume
+
             let volume = 0;
-            if (workoutData[key].exercises) {
-                workoutData[key].exercises.forEach(exercise => {
-                    if (!exercise) return;
-                    const weight = parseFloat(exercise.weight);
-                    const sets = parseInt(String(exercise.sets || '').split('/')[0]) || 0;
-                    const reps = parseInt(String(exercise.reps || '').split('/')[0]) || 0;
-                    if (weight && sets && reps) volume += weight * sets * reps;
-                });
-            }
+            Object.values(workoutData[key].exercises).forEach(exercise => {
+                if (!exercise) return;
+                const weight = parseFloat(exercise.weight);
+                const sets = parseInt(String(exercise.sets || '').split('/')[0]) || 0;
+                const reps = parseInt(String(exercise.reps || '').split('/')[0]) || 0;
+                if (weight && sets && reps) volume += weight * sets * reps;
+            });
             workoutData[key].volume = volume;
-            
+
             saveData();
             updateDashboard();
         }
 
         // Toggle exercise completion
-        function toggleExerciseCompletion(week, day, exerciseIndex) {
-            const key = getDayStorageKey(week, day, locationMode);
+        function toggleExerciseCompletion(week, day, exerciseId) {
+            const key = `week${week}_day${day}`;
             if (!workoutData[key]) workoutData[key] = {};
-            if (!workoutData[key].exercises) workoutData[key].exercises = [];
-            if (!workoutData[key].exercises[exerciseIndex]) workoutData[key].exercises[exerciseIndex] = {};
-            
-            const exerciseData = workoutData[key].exercises[exerciseIndex];
+            if (!workoutData[key].exercises) workoutData[key].exercises = {};
+            if (!workoutData[key].exercises[exerciseId]) workoutData[key].exercises[exerciseId] = {};
+
+            const exerciseData = workoutData[key].exercises[exerciseId];
             exerciseData.completed = !exerciseData.completed;
-            
-            const exercises = getExercisesForDay(day);
-            const isDone = index => workoutData[key].exercises && workoutData[key].exercises[index] && workoutData[key].exercises[index].completed;
-            const allCompleted = exercises.length > 0 && exercises.every((_, index) => isDone(index));
-            
+
+            const visible = getVisibleExercises(day);
+            const isDone = exercise => workoutData[key].exercises[exercise.id]?.completed;
+            const completedCount = visible.filter(isDone).length;
+            const allCompleted = visible.length > 0 && completedCount === visible.length;
+
             workoutData[key].completed = allCompleted;
             workoutData[key].location = locationMode;
-            
-            const completedCount = exercises.filter((_, index) => isDone(index)).length;
-            workoutData[key].progress = exercises.length ? Math.round((completedCount / exercises.length) * 100) : 0;
-            
+            workoutData[key].progress = visible.length ? Math.round((completedCount / visible.length) * 100) : 0;
+
             saveData();
             renderWeekGrid();
             renderWorkoutDay();
             updateDashboard();
-            showToast(allCompleted ? t('toast_day_done') : t('toast_exercises_done', { n: completedCount, m: exercises.length }), 'success');
+            showToast(allCompleted ? t('toast_day_done') : t('toast_exercises_done', { n: completedCount, m: visible.length }), 'success');
         }
 
-        // Initialize the program data
-        function initializeProgram() {
-            const seen = new Set();
-            allExercises = getAllProgramExercises()
-                .filter(exercise => {
-                    if (seen.has(exercise.name)) return false;
-                    seen.add(exercise.name);
-                    return true;
-                })
-                .map(exercise => ({
-                    name: exercise.name,
-                    equipment: exercise.equipment,
-                    weight: '',
-                    sets: exercise.sets,
-                    reps: exercise.reps
-                }));
-
-            // Save initial plan without showing a toast
-            localStorage.setItem('gymTrackerPlan', JSON.stringify({
-                name: 'athletic-lean',
-                exercises: allExercises
-            }));
-        }
-
-        // Add exercises that are missing from an older saved plan
-        function syncPlanWithProgram() {
-            const knownNames = new Set(allExercises.map(ex => ex.name));
-
-            getAllProgramExercises().forEach(exercise => {
-                if (!knownNames.has(exercise.name)) {
-                    allExercises.push({
-                        name: exercise.name,
-                        equipment: exercise.equipment,
-                        weight: '',
-                        sets: exercise.sets,
-                        reps: exercise.reps
-                    });
-                    knownNames.add(exercise.name);
-                }
-            });
-
-            localStorage.setItem('gymTrackerPlan', JSON.stringify({
-                name: 'athletic-lean',
-                exercises: allExercises
-            }));
-        }
-
-        // Load saved plan or initialize
+        // Load saved plan (migrating legacy data if needed)
         function loadPlanData() {
-            const savedPlan = localStorage.getItem('gymTrackerPlan');
-            if (savedPlan) {
-                try {
-                    const plan = JSON.parse(savedPlan);
-                    if (plan.name === 'athletic-lean' && Array.isArray(plan.exercises)) {
-                        allExercises = plan.exercises;
-                    }
-                } catch (e) {
-                    allExercises = [];
-                }
-            }
-            
-            if (allExercises.length === 0) {
-                initializeProgram();
-            }
-
-            syncPlanWithProgram();
+            migratePlanIfNeeded();
+            if (!currentPlanDay) currentPlanDay = getTodayDayNumber();
             initPlanEditor();
         }
 
