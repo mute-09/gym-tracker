@@ -97,6 +97,15 @@
             gap: 0.5rem;
         }
 
+        .logo-mark {
+            width: 32px;
+            height: 32px;
+            object-fit: contain;
+            display: block;
+            flex-shrink: 0;
+            mix-blend-mode: multiply;
+        }
+
         .nav-tabs {
             display: flex;
             gap: 0.5rem;
@@ -1181,9 +1190,7 @@
     <header>
         <div class="header-content">
             <div class="logo">
-                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M14.5 8.13a4.5 4.5 0 1 1 0 9.74M9.5 12a4.5 4.5 0 1 0 0-9.74M3 17.5h18M3 7h18" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
+                <img class="logo-mark" src="apple-touch-icon.png" alt="" width="32" height="32" decoding="async">
                 Gym Tracker
             </div>
             <div class="nav-tabs">
