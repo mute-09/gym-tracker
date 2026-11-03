@@ -239,26 +239,29 @@
             margin-bottom: 0.5rem;
         }
 
-        .day-status {
+        .day-location-status {
+            display: flex;
+            gap: 0.35rem;
+            flex-wrap: wrap;
+            margin-top: 0.5rem;
+        }
+
+        .mini-location {
             display: inline-flex;
             align-items: center;
-            gap: 0.25rem;
-            padding: 0.25rem 0.5rem;
-            border-radius: 0.25rem;
-            font-size: 0.7rem;
-            font-weight: 500;
-        }
-
-        .status-completed {
-            background: rgba(16, 185, 129, 0.2);
-            color: var(--secondary);
-            border: 1px solid var(--secondary);
-        }
-
-        .status-pending {
-            background: rgba(107, 114, 128, 0.2);
+            padding: 0.2rem 0.45rem;
+            border: 1px solid var(--border);
+            border-radius: 999px;
             color: var(--text-secondary);
-            border: 1px solid var(--text-secondary);
+            font-size: 0.65rem;
+            font-weight: 600;
+            letter-spacing: 0.02em;
+        }
+
+        .mini-location.done {
+            color: var(--secondary);
+            border-color: var(--secondary);
+            background: rgba(16, 185, 129, 0.15);
         }
 
         /* Workout Detail */
@@ -1190,13 +1193,13 @@
             return days[dayNum - 1] || 'Senin';
         }
 
-        // Get last week's data
+        // Get last week's data for the current location mode
         function getLastWeekData() {
             const lastWeek = currentWeek > 1 ? currentWeek - 1 : 12;
             const lastWeekData = {};
             
             for (let day = 1; day <= 7; day++) {
-                const key = `week${lastWeek}_day${day}`;
+                const key = getDayStorageKey(lastWeek, day, locationMode);
                 if (workoutData[key]) {
                     lastWeekData[day] = {
                         completed: workoutData[key].completed || false,
@@ -1219,7 +1222,18 @@
         function loadStoredData() {
             const storedData = localStorage.getItem('gymTrackerData');
             if (storedData) {
-                workoutData = JSON.parse(storedData);
+                try {
+                    const parsed = JSON.parse(storedData);
+                    const migrated = migrateLegacyWorkoutData(parsed);
+
+                    if (migrated !== parsed) {
+                        localStorage.setItem('gymTrackerData', JSON.stringify(migrated));
+                    }
+
+                    workoutData = migrated;
+                } catch (e) {
+                    workoutData = {};
+                }
             }
             
             // Auto-select today's day if not already selected
@@ -1352,18 +1366,23 @@
             
             for (let week = 1; week <= 12; week++) {
                 for (let day = 1; day <= 7; day++) {
-                    const key = `week${week}_day${day}`;
-                    const dayData = workoutData[key];
-                    if (!dayData) continue;
+                    let completedInAnyMode = false;
 
-                    if (dayData.completed) {
+                    for (const mode of ['gym', 'home']) {
+                        const dayData = workoutData[getDayStorageKey(week, day, mode)];
+                        if (!dayData) continue;
+
+                        if (dayData.completed) completedInAnyMode = true;
+                        if (dayData.exercises) {
+                            exercisesDone += dayData.exercises.filter(ex => ex && ex.completed).length;
+                        }
+                        totalVolume += dayData.volume || 0;
+                    }
+
+                    if (completedInAnyMode) {
                         totalWorkouts++;
                         completedDays++;
                     }
-                    if (dayData.exercises) {
-                        exercisesDone += dayData.exercises.filter(ex => ex && ex.completed).length;
-                    }
-                    totalVolume += dayData.volume || 0;
                 }
             }
             
@@ -1420,23 +1439,16 @@
                 dayCard.className = 'day-card';
                 dayCard.onclick = () => selectDay(day + 1, true);
                 
-                const key = `week${currentWeek}_day${day + 1}`;
-                const dayData = workoutData[key] || {};
-                const isCompleted = dayData.completed || false;
-                
+                const gymCompleted = isDayComplete(currentWeek, day + 1, 'gym');
+                const homeCompleted = isDayComplete(currentWeek, day + 1, 'home');
                 const program = getProgramForDay(day + 1);
                 
                 dayCard.innerHTML = `
                     <div class="day-name">${days[day]}</div>
                     <div class="day-program">${program}</div>
-                    <div class="day-status ${isCompleted ? 'status-completed' : 'status-pending'}">
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            ${isCompleted ? 
-                                '<path d="M20 6L9 17l-5-5" stroke-linecap="round" stroke-linejoin="round"/>' :
-                                '<path d="M12 2v4m0 12v4m4-4h4m-4-4H8m4-4H8" stroke-linecap="round" stroke-linejoin="round"/>'
-                            }
-                        </svg>
-                        <span>${isCompleted ? 'Selesai' : 'Belum'}</span>
+                    <div class="day-location-status">
+                        <span class="mini-location ${gymCompleted ? 'done' : ''}">Gym ${gymCompleted ? '✓' : '·'}</span>
+                        <span class="mini-location ${homeCompleted ? 'done' : ''}">Home ${homeCompleted ? '✓' : '·'}</span>
                     </div>
                 `;
                 
@@ -1444,20 +1456,6 @@
                 
                 weekGrid.appendChild(dayCard);
             }
-        }
-
-        // Get program for day
-        function getProgramForDay(day) {
-            const programs = {
-                1: 'Upper A',
-                2: 'Lower A',
-                3: 'Cardio',
-                4: 'Upper B',
-                5: 'Lower B',
-                6: 'Cardio',
-                7: 'Recovery'
-            };
-            return programs[day];
         }
 
         // Select day
@@ -1493,19 +1491,6 @@
                 return { sets: parts[0].trim(), reps: exercise.reps || parts[1].trim() };
             }
             return { sets: exercise.sets, reps: exercise.reps || '-' };
-        }
-
-        // Location filter: recovery/all-day exercises appear in both modes
-        function isExerciseForLocation(exercise, mode) {
-            const equipment = exercise.equipment;
-            if (equipment === 'Recovery' || equipment === 'Semua') return true;
-            return mode === 'gym' ? equipment === 'Gym' : equipment === 'Home';
-        }
-
-        function getVisibleExercises(day) {
-            return getExercisesForDay(day)
-                .map((exercise, index) => ({ exercise, index }))
-                .filter(({ exercise }) => isExerciseForLocation(exercise, locationMode));
         }
 
         function setLocationMode(mode) {
@@ -1575,15 +1560,14 @@
 
             if (!currentDay) currentDay = getTodayDayNumber();
 
-            const key = `week${currentWeek}_day${currentDay}`;
+            const key = getDayStorageKey(currentWeek, currentDay, locationMode);
             const dayData = workoutData[key] || {};
             const exercises = getExercisesForDay(currentDay);
-            const visibleExercises = getVisibleExercises(currentDay);
             const lastWeekData = getLastWeekData();
-            const completedCount = visibleExercises.filter(({ index }) =>
+            const completedCount = exercises.filter((_, index) =>
                 dayData.exercises && dayData.exercises[index] && dayData.exercises[index].completed
             ).length;
-            const progress = visibleExercises.length ? Math.round((completedCount / visibleExercises.length) * 100) : 0;
+            const progress = exercises.length ? Math.round((completedCount / exercises.length) * 100) : 0;
             
             // Get current day name
             const currentDayName = getDayNameFromNumber(currentDay);
@@ -1614,7 +1598,7 @@
                     <button class="location-btn ${locationMode === 'home' ? 'active' : ''}" onclick="setLocationMode('home')" role="tab" aria-selected="${locationMode === 'home'}">Home</button>
                 </div>
                 <div class="exercise-list">
-                    ${visibleExercises.length ? visibleExercises.map(({ exercise, index }) => {
+                    ${exercises.length ? exercises.map((exercise, index) => {
                         const exerciseData = dayData.exercises && dayData.exercises[index] || {};
                         const completed = exerciseData.completed || false;
                         const lastWeekExerciseData = lastWeekData[currentDay]?.exercises?.[index] || {};
@@ -1675,79 +1659,215 @@
 
         // Get day name
 
+        // Workout plan: gym and home variants are tracked separately, even when identical
+        const WORKOUT_PROGRAM = {
+            1: {
+                program: 'Upper A',
+                slots: [
+                    { gym: { name: 'Chest Press Machine', equipment: 'Gym' }, home: { name: 'Dumbbell Bench Press', equipment: 'Home' }, sets: '3 × 8–12', reps: '8–12' },
+                    { gym: { name: 'Lat Pulldown', equipment: 'Gym' }, home: { name: 'Dumbbell Pullover (Bench)', equipment: 'Home' }, sets: '3 × 10–12', reps: '10–12' },
+                    { gym: { name: 'Seated Cable Row', equipment: 'Gym' }, home: { name: 'Bench-Supported Dumbbell Row', equipment: 'Home' }, sets: '2 × 8–12', reps: '8–12' },
+                    { gym: { name: 'Incline Dumbbell Press', equipment: 'Gym' }, home: { name: 'Incline Dumbbell Press', equipment: 'Home' }, sets: '2 × 8–12', reps: '8–12' },
+                    { gym: { name: 'Lateral Raise', equipment: 'Gym' }, home: { name: 'Dumbbell Lateral Raise', equipment: 'Home' }, sets: '2 × 12–20', reps: '12–20' },
+                    { gym: { name: 'Triceps Pushdown', equipment: 'Gym' }, home: { name: 'Lying Dumbbell Triceps Extension', equipment: 'Home' }, sets: '2 × 10–15', reps: '10–15' },
+                    { gym: { name: 'Dumbbell Biceps Curl', equipment: 'Gym' }, home: { name: 'Dumbbell Biceps Curl', equipment: 'Home' }, sets: '2 × 10–15', reps: '10–15' }
+                ]
+            },
+            2: {
+                program: 'Lower A',
+                slots: [
+                    { gym: { name: 'Leg Press', equipment: 'Gym' }, home: { name: 'Dumbbell Front Squat (2 DB)', equipment: 'Home' }, sets: '3 × 8–12', reps: '8–12' },
+                    { gym: { name: 'Dumbbell Romanian Deadlift', equipment: 'Gym' }, home: { name: 'Dumbbell Romanian Deadlift', equipment: 'Home' }, sets: '3 × 8–10', reps: '8–10' },
+                    { gym: { name: 'Seated Leg Curl', equipment: 'Gym' }, home: { name: 'Sliding Towel Leg Curl', equipment: 'Home' }, sets: '2 × 10–15', reps: '10–15' },
+                    { gym: { name: 'Standing Calf Raise', equipment: 'Gym' }, home: { name: 'Dumbbell Standing Calf Raise', equipment: 'Home' }, sets: '2 × 12–15', reps: '12–15' },
+                    { gym: { name: 'Plank', equipment: 'Gym' }, home: { name: 'Plank', equipment: 'Home' }, sets: '2 × 30–45 detik', reps: '30–45 detik' }
+                ]
+            },
+            3: {
+                program: 'Cardio',
+                slots: [
+                    { gym: { name: 'Treadmill / Stationary Bike', equipment: 'Gym' }, home: { name: 'Brisk Walking / Cycling', equipment: 'Home' }, sets: '25–30 menit', reps: '-' }
+                ]
+            },
+            4: {
+                program: 'Upper B',
+                slots: [
+                    { gym: { name: 'Incline Chest Press', equipment: 'Gym' }, home: { name: 'Incline Dumbbell Press', equipment: 'Home' }, sets: '3 × 8–12', reps: '8–12' },
+                    { gym: { name: 'Chest Supported Row', equipment: 'Gym' }, home: { name: 'Chest-Supported Dumbbell Row', equipment: 'Home' }, sets: '3 × 8–12', reps: '8–12' },
+                    { gym: { name: 'Neutral Grip Lat Pulldown', equipment: 'Gym' }, home: { name: 'Dumbbell Pullover (Bench)', equipment: 'Home' }, sets: '2 × 10–12', reps: '10–12' },
+                    { gym: { name: 'Machine Shoulder Press', equipment: 'Gym' }, home: { name: 'Seated Dumbbell Shoulder Press', equipment: 'Home' }, sets: '2 × 8–12', reps: '8–12' },
+                    { gym: { name: 'Reverse Pec Deck', equipment: 'Gym' }, home: { name: 'Chest-Supported Dumbbell Reverse Fly', equipment: 'Home' }, sets: '2 × 12–20', reps: '12–20' },
+                    { gym: { name: 'Cable Lateral Raise', equipment: 'Gym' }, home: { name: 'Dumbbell Lateral Raise', equipment: 'Home' }, sets: '2 × 12–20', reps: '12–20' },
+                    { gym: { name: 'Cable Biceps Curl', equipment: 'Gym' }, home: { name: 'Dumbbell Hammer Curl', equipment: 'Home' }, sets: '2 × 10–15', reps: '10–15' },
+                    { gym: { name: 'Triceps Pushdown', equipment: 'Gym' }, home: { name: 'Overhead Dumbbell Triceps Extension', equipment: 'Home' }, sets: '2 × 10–15', reps: '10–15' }
+                ]
+            },
+            5: {
+                program: 'Lower B',
+                slots: [
+                    { gym: { name: 'Hack Squat / Goblet Squat', equipment: 'Gym' }, home: { name: 'Dumbbell Bulgarian Split Squat', equipment: 'Home' }, sets: '3 × 8–12/kaki', reps: '8–12/kaki' },
+                    { gym: { name: 'Hip Thrust', equipment: 'Gym' }, home: { name: 'Dumbbell Hip Thrust (Bench)', equipment: 'Home' }, sets: '3 × 8–12', reps: '8–12' },
+                    { gym: { name: 'Leg Extension', equipment: 'Gym' }, home: { name: 'Heel-Elevated Bodyweight Squat', equipment: 'Home' }, sets: '2 × 10–15', reps: '10–15' },
+                    { gym: { name: 'Seated Leg Curl', equipment: 'Gym' }, home: { name: 'Sliding Towel Leg Curl', equipment: 'Home' }, sets: '2 × 10–15', reps: '10–15' },
+                    { gym: { name: 'Calf Raise', equipment: 'Gym' }, home: { name: 'Dumbbell Standing Calf Raise', equipment: 'Home' }, sets: '2 × 12–15', reps: '12–15' },
+                    { gym: { name: 'Dead Bug', equipment: 'Gym' }, home: { name: 'Dead Bug', equipment: 'Home' }, sets: '2 × 8–10/side', reps: '8–10/side' }
+                ]
+            },
+            6: {
+                program: 'Cardio',
+                slots: [
+                    { gym: { name: 'Treadmill / Stationary Bike', equipment: 'Gym' }, home: { name: 'Brisk Walking / Cycling', equipment: 'Home' }, sets: '25–30 menit', reps: '-' }
+                ]
+            },
+            7: {
+                program: 'Recovery',
+                slots: [
+                    { gym: { name: 'Rest / Jalan santai', equipment: 'Recovery' }, home: { name: 'Rest / Jalan santai', equipment: 'Recovery' }, sets: 'Sesuai kebutuhan', reps: '-' }
+                ]
+            }
+        };
+
+        // Migration from the old mixed gym/home list to separate Gym/Home storage keys
+        const LEGACY_INDEX_MAP = {
+            1: { 0: [['gym', 0]], 1: [['gym', 1]], 2: [['gym', 2]], 3: [['home', 3]], 4: [['home', 4]], 5: [['home', 5]], 6: [['home', 6]] },
+            2: { 0: [['gym', 0]], 1: [['home', 1]], 2: [['gym', 2]], 3: [['home', 2]], 4: [['home', 3]], 5: [['home', 4]] },
+            3: { 0: [['gym', 0]], 1: [['home', 0]] },
+            4: { 0: [['gym', 0]], 1: [['home', 1]], 2: [['gym', 2]], 3: [['home', 2]], 4: [['gym', 3]], 5: [['home', 4]], 6: [['home', 5]], 7: [['home', 6]], 8: [['home', 7]] },
+            5: { 0: [['gym', 0]], 1: [['home', 1]], 2: [['home', 2]], 3: [['home', 3]], 4: [['home', 4]], 5: [['home', 5]] },
+            6: { 0: [['gym', 0]], 1: [['home', 0]] },
+            7: { 0: [['home', 0]] }
+        };
+
+        function getDayStorageKey(week, day, mode = locationMode) {
+            return `week${week}_day${day}_${mode}`;
+        }
+
+        function recalculateMigratedDay(data, key) {
+            const match = key.match(/week(\d+)_day(\d+)_(gym|home)/);
+            if (!match) return;
+
+            const [, week, day, mode] = match;
+            const slotCount = WORKOUT_PROGRAM[Number(day)]?.slots?.length || 0;
+            const dayData = data[key] || {};
+            const exercises = dayData.exercises || [];
+
+            let volume = 0;
+            exercises.forEach(exercise => {
+                if (!exercise) return;
+                const weight = parseFloat(exercise.weight) || 0;
+                const sets = parseInt(String(exercise.sets || '').split('/')[0]) || 0;
+                const reps = parseInt(String(exercise.reps || '').split('/')[0]) || 0;
+                volume += weight * sets * reps;
+            });
+
+            const completedCount = exercises.filter(exercise => exercise && exercise.completed).length;
+            const allCompleted = slotCount > 0 && Array.from({ length: slotCount }).every((_, index) => {
+                return exercises[index] && exercises[index].completed;
+            });
+
+            dayData.volume = volume;
+            dayData.completed = allCompleted;
+            dayData.progress = slotCount ? Math.round((completedCount / slotCount) * 100) : 0;
+            dayData.location = mode;
+            data[key] = dayData;
+        }
+
+        function migrateLegacyWorkoutData(parsed) {
+            if (!parsed || typeof parsed !== 'object') return {};
+
+            const legacyKeys = Object.keys(parsed).filter(key => /^week\d+_day\d+$/.test(key));
+            if (legacyKeys.length === 0) return parsed;
+
+            localStorage.setItem(`gymTrackerData_backup_${Date.now()}`, JSON.stringify(parsed));
+
+            const migrated = { ...parsed };
+            const changedKeys = new Set();
+
+            for (const legacyKey of legacyKeys) {
+                const match = legacyKey.match(/week(\d+)_day(\d+)/);
+                if (!match) continue;
+
+                const week = Number(match[1]);
+                const day = Number(match[2]);
+                const legacyDay = parsed[legacyKey] || {};
+                const slotMap = LEGACY_INDEX_MAP[day] || {};
+
+                for (const [oldIndex, targets] of Object.entries(slotMap)) {
+                    const item = legacyDay.exercises && legacyDay.exercises[Number(oldIndex)];
+                    if (!item || Object.keys(item).length === 0) continue;
+
+                    for (const [mode, slot] of targets) {
+                        const newKey = getDayStorageKey(week, day, mode);
+                        if (!migrated[newKey]) migrated[newKey] = { exercises: [] };
+                        if (!migrated[newKey].exercises) migrated[newKey].exercises = [];
+                        if (migrated[newKey].exercises[slot]) continue;
+
+                        migrated[newKey].exercises[slot] = item;
+                        changedKeys.add(newKey);
+                    }
+                }
+
+                delete migrated[legacyKey];
+            }
+
+            changedKeys.forEach(key => recalculateMigratedDay(migrated, key));
+            return migrated;
+        }
+
+        function getAllProgramExercises() {
+            return Object.values(WORKOUT_PROGRAM).flatMap(({ slots }) =>
+                slots.flatMap(slot => [
+                    { ...slot.gym, sets: slot.sets, reps: slot.reps },
+                    { ...slot.home, sets: slot.sets, reps: slot.reps }
+                ])
+            );
+        }
+
         // Get exercises for day
         function getExercisesForDay(day) {
-            const allDayExercises = {
-                1: [
-                    { name: 'Chest Press Machine', equipment: 'Gym', sets: '3 × 8–12', reps: '8–12' },
-                    { name: 'Lat Pulldown', equipment: 'Gym', sets: '3 × 10–12', reps: '10–12' },
-                    { name: 'Seated Cable Row', equipment: 'Gym', sets: '2 × 8–12', reps: '8–12' },
-                    { name: 'Incline Dumbbell Press', equipment: 'Home', sets: '2 × 8–12', reps: '8–12' },
-                    { name: 'Lateral Raise', equipment: 'Home', sets: '2 × 12–20', reps: '12–20' },
-                    { name: 'Triceps Pushdown', equipment: 'Home', sets: '2 × 10–15', reps: '10–15' },
-                    { name: 'Dumbbell Biceps Curl', equipment: 'Home', sets: '2 × 10–15', reps: '10–15' }
-                ],
-                2: [
-                    { name: 'Leg Press', equipment: 'Gym', sets: '3 × 8–12', reps: '8–12' },
-                    { name: 'Dumbbell Romanian Deadlift', equipment: 'Home', sets: '3 × 8–10', reps: '8–10' },
-                    { name: 'Seated Leg Curl', equipment: 'Gym', sets: '2 × 10–15', reps: '10–15' },
-                    { name: 'Sliding Towel Leg Curl', equipment: 'Home', sets: '2 × 10–15', reps: '10–15' },
-                    { name: 'Standing Calf Raise', equipment: 'Home', sets: '2 × 12–15', reps: '12–15' },
-                    { name: 'Plank', equipment: 'Home', sets: '2 × 30–45 detik', reps: '30–45 detik' }
-                ],
-                3: [
-                    { name: 'Treadmill / Stationary Bike', equipment: 'Gym', sets: '25–30 menit', reps: '-' },
-                    { name: 'Brisk Walking / Cycling', equipment: 'Home', sets: '25–30 menit', reps: '-' }
-                ],
-                4: [
-                    { name: 'Incline Chest Press', equipment: 'Gym', sets: '3 × 8–12', reps: '8–12' },
-                    { name: 'Chest Supported Dumbbell Row', equipment: 'Home', sets: '3 × 8–12', reps: '8–12' },
-                    { name: 'Neutral Grip Lat Pulldown', equipment: 'Gym', sets: '2 × 10–12', reps: '10–12' },
-                    { name: 'Dumbbell Pullover (Bench)', equipment: 'Home', sets: '2 × 10–12', reps: '10–12' },
-                    { name: 'Machine Shoulder Press', equipment: 'Gym', sets: '2 × 8–12', reps: '8–12' },
-                    { name: 'Chest-Supported Dumbbell Reverse Fly', equipment: 'Home', sets: '2 × 12–20', reps: '12–20' },
-                    { name: 'Dumbbell Lateral Raise', equipment: 'Home', sets: '2 × 12–20', reps: '12–20' },
-                    { name: 'Dumbbell Hammer Curl', equipment: 'Home', sets: '2 × 10–15', reps: '10–15' },
-                    { name: 'Overhead Dumbbell Triceps Extension', equipment: 'Home', sets: '2 × 10–15', reps: '10–15' }
-                ],
-                5: [
-                    { name: 'Hack Squat / Goblet Squat', equipment: 'Gym', sets: '3 × 8–12/kaki', reps: '8–12/kaki' },
-                    { name: 'Dumbbell Hip Thrust (Bench)', equipment: 'Home', sets: '3 × 8–12', reps: '8–12' },
-                    { name: 'Heel-Elevated Bodyweight Squat', equipment: 'Home', sets: '2 × 10–15', reps: '10–15' },
-                    { name: 'Sliding Towel Leg Curl', equipment: 'Home', sets: '2 × 10–15', reps: '10–15' },
-                    { name: 'Dumbbell Standing Calf Raise', equipment: 'Home', sets: '2 × 12–15', reps: '12–15' },
-                    { name: 'Dead Bug', equipment: 'Home', sets: '2 × 8–10/side', reps: '8–10/side' }
-                ],
-                6: [
-                    { name: 'Treadmill / Stationary Bike', equipment: 'Gym', sets: '25–30 menit', reps: '-' },
-                    { name: 'Brisk Walking / Cycling', equipment: 'Home', sets: '25–30 menit', reps: '-' }
-                ],
-                7: [
-                    { name: 'Rest / Jalan santai', equipment: 'Recovery', sets: 'Sesuai kebutuhan', reps: '-' }
-                ]
-            };
-            
-            return allDayExercises[day] || [];
+            const mode = locationMode;
+            const dayPlan = WORKOUT_PROGRAM[day];
+            if (!dayPlan) return [];
+
+            return dayPlan.slots.map(slot => {
+                const variant = slot[mode];
+                return {
+                    name: variant.name,
+                    equipment: variant.equipment,
+                    sets: slot.sets,
+                    reps: slot.reps
+                };
+            });
+        }
+
+        function isDayComplete(week, day, mode) {
+            const dayData = workoutData[getDayStorageKey(week, day, mode)];
+            return !!(dayData && dayData.completed);
+        }
+
+        function getProgramForDay(day) {
+            return WORKOUT_PROGRAM[day]?.program || 'Recovery';
         }
 
         // Update exercise data
         function updateExerciseData(week, day, exerciseIndex, field, value) {
-            const key = `week${week}_day${day}`;
+            const key = getDayStorageKey(week, day, locationMode);
             if (!workoutData[key]) workoutData[key] = {};
             if (!workoutData[key].exercises) workoutData[key].exercises = [];
             if (!workoutData[key].exercises[exerciseIndex]) workoutData[key].exercises[exerciseIndex] = {};
             
             workoutData[key].exercises[exerciseIndex][field] = value;
+            workoutData[key].location = locationMode;
             
             // Calculate volume
             let volume = 0;
             if (workoutData[key].exercises) {
                 workoutData[key].exercises.forEach(exercise => {
-                    if (exercise.weight && exercise.sets && exercise.reps) {
-                        const sets = parseInt(exercise.sets.split('/')[0]) || 1;
-                        const reps = parseInt(exercise.reps.split('/')[0]) || 0;
-                        volume += exercise.weight * sets * reps;
-                    }
+                    if (!exercise) return;
+                    const weight = parseFloat(exercise.weight);
+                    const sets = parseInt(String(exercise.sets || '').split('/')[0]) || 0;
+                    const reps = parseInt(String(exercise.reps || '').split('/')[0]) || 0;
+                    if (weight && sets && reps) volume += weight * sets * reps;
                 });
             }
             workoutData[key].volume = volume;
@@ -1758,7 +1878,7 @@
 
         // Toggle exercise completion
         function toggleExerciseCompletion(week, day, exerciseIndex) {
-            const key = `week${week}_day${day}`;
+            const key = getDayStorageKey(week, day, locationMode);
             if (!workoutData[key]) workoutData[key] = {};
             if (!workoutData[key].exercises) workoutData[key].exercises = [];
             if (!workoutData[key].exercises[exerciseIndex]) workoutData[key].exercises[exerciseIndex] = {};
@@ -1766,178 +1886,40 @@
             const exerciseData = workoutData[key].exercises[exerciseIndex];
             exerciseData.completed = !exerciseData.completed;
             
-            // Check completion against the visible (location-specific) exercises only
-            const visibleIdx = getVisibleExercises(day).map(({ index }) => index);
-            const isDone = idx => workoutData[key].exercises && workoutData[key].exercises[idx] && workoutData[key].exercises[idx].completed;
-            const allCompleted = visibleIdx.length > 0 && visibleIdx.every(isDone);
+            const exercises = getExercisesForDay(day);
+            const isDone = index => workoutData[key].exercises && workoutData[key].exercises[index] && workoutData[key].exercises[index].completed;
+            const allCompleted = exercises.length > 0 && exercises.every((_, index) => isDone(index));
             
             workoutData[key].completed = allCompleted;
             workoutData[key].location = locationMode;
             
-            // Calculate actual day progress
-            const completedCount = visibleIdx.filter(isDone).length;
-            workoutData[key].progress = visibleIdx.length ? Math.round((completedCount / visibleIdx.length) * 100) : 0;
+            const completedCount = exercises.filter((_, index) => isDone(index)).length;
+            workoutData[key].progress = exercises.length ? Math.round((completedCount / exercises.length) * 100) : 0;
             
             saveData();
             renderWeekGrid();
             renderWorkoutDay();
             updateDashboard();
-            showToast(allCompleted ? 'Hari selesai!' : `${completedCount}/${visibleIdx.length} latihan selesai`, 'success');
+            showToast(allCompleted ? 'Hari selesai!' : `${completedCount}/${exercises.length} latihan selesai`, 'success');
         }
 
         // Initialize the program data
         function initializeProgram() {
-            const defaultExercises = [];
-            
-            // Create comprehensive exercise list for the plan editor
-            const allProgramExercises = [];
-            
-            // Week 1-2: Adaptasi teknik (2 sets per exercise)
-            for (let week = 1; week <= 2; week++) {
-                const day1 = getExercisesForDay(1);
-                day1.forEach(exercise => {
-                    allProgramExercises.push({
-                        name: exercise.name,
-                        equipment: exercise.equipment,
-                        sets: '2 × 8–12',
-                        reps: '8–12'
-                    });
-                });
-                
-                const day2 = getExercisesForDay(2);
-                day2.forEach(exercise => {
-                    allProgramExercises.push({
-                        name: exercise.name,
-                        equipment: exercise.equipment,
-                        sets: '2 × 8–12',
-                        reps: '8–12'
-                    });
-                });
-                
-                const day3 = getExercisesForDay(3);
-                day3.forEach(exercise => {
-                    allProgramExercises.push({
-                        name: exercise.name,
-                        equipment: exercise.equipment,
-                        sets: '25–30 menit',
-                        reps: '-'
-                    });
-                });
-            }
-            
-            // Week 3-6: Building foundation
-            for (let week = 3; week <= 6; week++) {
-                const day1 = getExercisesForDay(1);
-                day1.forEach(exercise => {
-                    allProgramExercises.push({
-                        name: exercise.name,
-                        equipment: exercise.equipment,
-                        sets: '3 × 8–12',
-                        reps: '8–12'
-                    });
-                });
-                
-                const day2 = getExercisesForDay(2);
-                day2.forEach(exercise => {
-                    allProgramExercises.push({
-                        name: exercise.name,
-                        equipment: exercise.equipment,
-                        sets: '3 × 8–12',
-                        reps: '8–12'
-                    });
-                });
-                
-                const day3 = getExercisesForDay(3);
-                day3.forEach(exercise => {
-                    allProgramExercises.push({
-                        name: exercise.name,
-                        equipment: exercise.equipment,
-                        sets: '25–30 menit',
-                        reps: '-'
-                    });
-                });
-            }
-            
-            // Week 7-9: Progressive overload
-            for (let week = 7; week <= 9; week++) {
-                const day1 = getExercisesForDay(1);
-                day1.forEach(exercise => {
-                    allProgramExercises.push({
-                        name: exercise.name,
-                        equipment: exercise.equipment,
-                        sets: '3 × 8–12',
-                        reps: '8–12'
-                    });
-                });
-                
-                const day2 = getExercisesForDay(2);
-                day2.forEach(exercise => {
-                    allProgramExercises.push({
-                        name: exercise.name,
-                        equipment: exercise.equipment,
-                        sets: '3 × 8–12',
-                        reps: '8–12'
-                    });
-                });
-                
-                const day3 = getExercisesForDay(3);
-                day3.forEach(exercise => {
-                    allProgramExercises.push({
-                        name: exercise.name,
-                        equipment: exercise.equipment,
-                        sets: '25–30 menit',
-                        reps: '-'
-                    });
-                });
-            }
-            
-            // Week 10-12: Consolidation & evaluation
-            for (let week = 10; week <= 12; week++) {
-                const day1 = getExercisesForDay(1);
-                day1.forEach(exercise => {
-                    allProgramExercises.push({
-                        name: exercise.name,
-                        equipment: exercise.equipment,
-                        sets: '3 × 8–12',
-                        reps: '8–12'
-                    });
-                });
-                
-                const day2 = getExercisesForDay(2);
-                day2.forEach(exercise => {
-                    allProgramExercises.push({
-                        name: exercise.name,
-                        equipment: exercise.equipment,
-                        sets: '3 × 8–12',
-                        reps: '8–12'
-                    });
-                });
-                
-                const day3 = getExercisesForDay(3);
-                day3.forEach(exercise => {
-                    allProgramExercises.push({
-                        name: exercise.name,
-                        equipment: exercise.equipment,
-                        sets: '25–30 menit',
-                        reps: '-'
-                    });
-                });
-            }
-            
-            // Remove duplicates
-            const uniqueExercises = [];
             const seen = new Set();
-            
-            allProgramExercises.forEach(exercise => {
-                const key = exercise.name;
-                if (!seen.has(key)) {
-                    seen.add(key);
-                    uniqueExercises.push(exercise);
-                }
-            });
-            
-            allExercises = uniqueExercises;
-            
+            allExercises = getAllProgramExercises()
+                .filter(exercise => {
+                    if (seen.has(exercise.name)) return false;
+                    seen.add(exercise.name);
+                    return true;
+                })
+                .map(exercise => ({
+                    name: exercise.name,
+                    equipment: exercise.equipment,
+                    weight: '',
+                    sets: exercise.sets,
+                    reps: exercise.reps
+                }));
+
             // Save initial plan without showing a toast
             localStorage.setItem('gymTrackerPlan', JSON.stringify({
                 name: 'athletic-lean',
@@ -1945,24 +1927,22 @@
             }));
         }
 
-        // Add exercises that are missing from an older saved plan (e.g. day 4-7)
+        // Add exercises that are missing from an older saved plan
         function syncPlanWithProgram() {
             const knownNames = new Set(allExercises.map(ex => ex.name));
 
-            for (let day = 1; day <= 7; day++) {
-                getExercisesForDay(day).forEach(exercise => {
-                    if (!knownNames.has(exercise.name)) {
-                        allExercises.push({
-                            name: exercise.name,
-                            equipment: exercise.equipment,
-                            weight: '',
-                            sets: exercise.sets,
-                            reps: exercise.reps
-                        });
-                        knownNames.add(exercise.name);
-                    }
-                });
-            }
+            getAllProgramExercises().forEach(exercise => {
+                if (!knownNames.has(exercise.name)) {
+                    allExercises.push({
+                        name: exercise.name,
+                        equipment: exercise.equipment,
+                        weight: '',
+                        sets: exercise.sets,
+                        reps: exercise.reps
+                    });
+                    knownNames.add(exercise.name);
+                }
+            });
 
             localStorage.setItem('gymTrackerPlan', JSON.stringify({
                 name: 'athletic-lean',
