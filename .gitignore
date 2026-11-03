@@ -1,0 +1,47 @@
+# Environment & secrets
+.env
+.env.*
+!.env.example
+*.env
+*.key
+*.pem
+*.p12
+*.pfx
+*.crt
+id_rsa
+id_rsa.*
+id_ed25519
+id_ed25519.*
+*.secret
+secrets/
+credentials-*.json
+.cloudflared/
+cf-*.json
+
+# Cloudflare / tunnel credentials
+tunnel-token*
+cert.pem
+
+# Logs
+*.log
+logs/
+
+# Dependencies & build
+node_modules/
+dist/
+build/
+.cache/
+
+# Editor / OS
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+
+# Backups
+*.bak
+*.backup
+backup/
+backups/
+*-backup-*/
