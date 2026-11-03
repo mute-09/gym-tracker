@@ -465,6 +465,57 @@
             color: white;
         }
 
+        .location-toggle {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            width: max-content;
+            margin-bottom: 1rem;
+            padding: 0.25rem;
+            background: var(--bg-dark);
+            border: 1px solid var(--border);
+            border-radius: 0.625rem;
+        }
+
+        .location-label {
+            padding: 0 0.5rem;
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .location-btn {
+            padding: 0.45rem 1rem;
+            border: none;
+            border-radius: 0.5rem;
+            background: transparent;
+            color: var(--text-secondary);
+            font-size: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .location-btn:hover {
+            color: var(--text);
+        }
+
+        .location-btn.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .empty-location {
+            padding: 2rem;
+            text-align: center;
+            color: var(--text-secondary);
+            background: var(--bg-dark);
+            border: 1px dashed var(--border);
+            border-radius: 0.75rem;
+        }
+
         /* Exercise guide modal */
         .modal-overlay {
             position: fixed;
@@ -1037,6 +1088,7 @@
         let currentWeek = 1;
         let currentDay = null;
         let allExercises = [];
+        let locationMode = localStorage.getItem('gymTrackerLocation') || 'gym';
 
         // Initialize app
         document.addEventListener('DOMContentLoaded', function() {
@@ -1349,6 +1401,25 @@
             return { sets: exercise.sets, reps: exercise.reps || '-' };
         }
 
+        // Location filter: recovery/all-day exercises appear in both modes
+        function isExerciseForLocation(exercise, mode) {
+            const equipment = exercise.equipment;
+            if (equipment === 'Recovery' || equipment === 'Semua') return true;
+            return mode === 'gym' ? equipment === 'Gym' : equipment === 'Home';
+        }
+
+        function getVisibleExercises(day) {
+            return getExercisesForDay(day)
+                .map((exercise, index) => ({ exercise, index }))
+                .filter(({ exercise }) => isExerciseForLocation(exercise, locationMode));
+        }
+
+        function setLocationMode(mode) {
+            locationMode = mode;
+            localStorage.setItem('gymTrackerLocation', mode);
+            renderWorkoutDay();
+        }
+
         // Exercise guide: open modal with the movement demo and steps
         function openGuide(name) {
             const guides = (typeof EXERCISE_GUIDES !== 'undefined') ? EXERCISE_GUIDES : {};
@@ -1413,11 +1484,12 @@
             const key = `week${currentWeek}_day${currentDay}`;
             const dayData = workoutData[key] || {};
             const exercises = getExercisesForDay(currentDay);
+            const visibleExercises = getVisibleExercises(currentDay);
             const lastWeekData = getLastWeekData();
-            const completedCount = exercises.filter((_, idx) =>
-                dayData.exercises && dayData.exercises[idx] && dayData.exercises[idx].completed
+            const completedCount = visibleExercises.filter(({ index }) =>
+                dayData.exercises && dayData.exercises[index] && dayData.exercises[index].completed
             ).length;
-            const progress = exercises.length ? Math.round((completedCount / exercises.length) * 100) : 0;
+            const progress = visibleExercises.length ? Math.round((completedCount / visibleExercises.length) * 100) : 0;
             
             // Get current day name
             const currentDayName = getDayNameFromNumber(currentDay);
@@ -1442,8 +1514,13 @@
                         </div>
                     </div>
                 </div>
+                <div class="location-toggle" role="tablist" aria-label="Lokasi latihan">
+                    <span class="location-label">Lokasi</span>
+                    <button class="location-btn ${locationMode === 'gym' ? 'active' : ''}" onclick="setLocationMode('gym')" role="tab" aria-selected="${locationMode === 'gym'}">Gym</button>
+                    <button class="location-btn ${locationMode === 'home' ? 'active' : ''}" onclick="setLocationMode('home')" role="tab" aria-selected="${locationMode === 'home'}">Home</button>
+                </div>
                 <div class="exercise-list">
-                    ${exercises.map((exercise, index) => {
+                    ${visibleExercises.length ? visibleExercises.map(({ exercise, index }) => {
                         const exerciseData = dayData.exercises && dayData.exercises[index] || {};
                         const completed = exerciseData.completed || false;
                         const lastWeekExerciseData = lastWeekData[currentDay]?.exercises?.[index] || {};
@@ -1497,7 +1574,7 @@
                                 <button class="complete-btn ${completed ? 'completed' : ''}" onclick="toggleExerciseCompletion(${currentWeek}, ${currentDay}, ${index})" ${completed ? 'disabled' : ''}>${completed ? 'Selesai' : 'Tandai Selesai'}</button>
                             </div>
                         `;
-                    }).join('')}
+                    }).join('') : '<div class="empty-location">Tidak ada latihan untuk mode ini. Ganti Lokasi Gym/Home.</div>'}
                 </div>
             `;
         }
@@ -1552,7 +1629,7 @@
                     { name: 'Brisk Walking / Cycling', equipment: 'Home', sets: '25–30 menit', reps: '-' }
                 ],
                 7: [
-                    { name: 'Rest / Jalan santai', equipment: 'Home', sets: 'Sesuai kebutuhan', reps: '-' }
+                    { name: 'Rest / Jalan santai', equipment: 'Recovery', sets: 'Sesuai kebutuhan', reps: '-' }
                 ]
             };
             
@@ -1595,24 +1672,23 @@
             const exerciseData = workoutData[key].exercises[exerciseIndex];
             exerciseData.completed = !exerciseData.completed;
             
-            // Check if all exercises are completed
-            const exercises = getExercisesForDay(day);
-            const allCompleted = exercises.every((_, idx) => {
-                return workoutData[key].exercises && workoutData[key].exercises[idx] && workoutData[key].exercises[idx].completed;
-            });
+            // Check completion against the visible (location-specific) exercises only
+            const visibleIdx = getVisibleExercises(day).map(({ index }) => index);
+            const isDone = idx => workoutData[key].exercises && workoutData[key].exercises[idx] && workoutData[key].exercises[idx].completed;
+            const allCompleted = visibleIdx.length > 0 && visibleIdx.every(isDone);
             
             workoutData[key].completed = allCompleted;
+            workoutData[key].location = locationMode;
             
             // Calculate actual day progress
-            const completedCount = exercises.filter((_, idx) => {
-                return workoutData[key].exercises && workoutData[key].exercises[idx] && workoutData[key].exercises[idx].completed;
-            }).length;
-            workoutData[key].progress = exercises.length ? Math.round((completedCount / exercises.length) * 100) : 0;
+            const completedCount = visibleIdx.filter(isDone).length;
+            workoutData[key].progress = visibleIdx.length ? Math.round((completedCount / visibleIdx.length) * 100) : 0;
             
             saveData();
+            renderWeekGrid();
             renderWorkoutDay();
             updateDashboard();
-            showToast(allCompleted ? 'Hari selesai!' : `${completedCount}/${exercises.length} latihan selesai`, 'success');
+            showToast(allCompleted ? 'Hari selesai!' : `${completedCount}/${visibleIdx.length} latihan selesai`, 'success');
         }
 
         // Initialize the program data
