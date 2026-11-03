@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gym Tracker - Athletic Lean Program</title>
+    <title data-i18n="app_title">Gym Tracker - Athletic Lean Program</title>
     <link rel="icon" href="favicon.ico" sizes="any">
     <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
@@ -466,6 +466,31 @@
         .guide-btn:hover {
             background: var(--info);
             color: white;
+        }
+
+        .lang-toggle {
+            display: flex;
+            gap: .25rem;
+            padding: .2rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: .5rem;
+        }
+
+        .lang-btn {
+            padding: .35rem .6rem;
+            border: none;
+            border-radius: .35rem;
+            background: transparent;
+            color: var(--text-secondary);
+            font-size: .7rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .lang-btn.active {
+            background: var(--primary);
+            color: #fff;
         }
 
         .location-toggle {
@@ -996,8 +1021,12 @@
                 Gym Tracker
             </div>
             <div class="nav-tabs">
-                <button class="tab-btn active" onclick="switchTab('dashboard')">Dashboard</button>
-                <button class="tab-btn" onclick="switchTab('planner')">Plan Editor</button>
+                <button class="tab-btn active" onclick="switchTab('dashboard')" data-i18n="tab_dashboard">Dashboard</button>
+                <button class="tab-btn" onclick="switchTab('planner')" data-i18n="tab_planner">Plan Editor</button>
+            </div>
+            <div class="lang-toggle" role="group" aria-label="Language">
+                <button class="lang-btn" data-lang="en" onclick="setLang('en')">EN</button>
+                <button class="lang-btn" data-lang="id" onclick="setLang('id')">ID</button>
             </div>
         </div>
     </header>
@@ -1007,70 +1036,68 @@
             <div class="dashboard">
                 <div class="sidebar">
                     <div class="progress-section">
-                        <h3 style="margin-bottom: 1rem; font-size: 0.875rem; color: var(--text-secondary);">Program Progress</h3>
+                        <h3 style="margin-bottom: 1rem; font-size: 0.875rem; color: var(--text-secondary);" data-i18n="progress_title">Program Progress</h3>
                         <div class="progress-bar">
                             <div class="progress-fill" id="progressFill" style="width: 0%"></div>
                         </div>
-                        <p style="text-align: center; margin-top: 0.5rem; font-size: 0.75rem; color: var(--text-secondary);">
-                            <span id="progressPercent">0</span>% Complete
-                        </p>
+                        <p id="progressPercentText" style="text-align: center; margin-top: 0.5rem; font-size: 0.75rem; color: var(--text-secondary);">0% Complete</p>
                     </div>
 
                     <div class="stats-grid">
                         <div class="stat-card">
                             <div class="stat-value" id="totalWorkouts">0</div>
-                            <div class="stat-label">Total Workouts</div>
+                            <div class="stat-label" data-i18n="stat_total_workouts">Total Workouts</div>
                         </div>
                         <div class="stat-card">
                             <div class="stat-value" id="currentStreak">0</div>
-                            <div class="stat-label">Day Streak</div>
+                            <div class="stat-label" data-i18n="stat_streak">Day Streak</div>
                         </div>
                         <div class="stat-card">
                             <div class="stat-value" id="exercisesDone">0</div>
-                            <div class="stat-label">Exercises Done</div>
+                            <div class="stat-label" data-i18n="stat_exercises_done">Exercises Done</div>
                         </div>
                         <div class="stat-card">
                             <div class="stat-value" id="weeklyVolume">0kg</div>
-                            <div class="stat-label">Total Volume</div>
+                            <div class="stat-label" data-i18n="stat_total_volume">Total Volume</div>
                         </div>
                     </div>
 
                     <div style="margin-top: 2rem;">
-                        <h3 style="margin-bottom: 1rem; font-size: 0.875rem; color: var(--text-secondary);">Current Week</h3>
+                        <h3 style="margin-bottom: 1rem; font-size: 0.875rem; color: var(--text-secondary);" data-i18n="current_week_title">Current Week</h3>
                         <div id="weekInfo">
                             <p style="font-size: 0.875rem; margin-bottom: 0.5rem;">
-                                <span style="color: var(--text-secondary);">Week:</span>
+                                <span style="color: var(--text-secondary);" data-i18n="label_week">Week:</span>
                                 <span id="currentWeek">1</span>
                             </p>
                             <p style="font-size: 0.875rem;">
-                                <span style="color: var(--text-secondary);">Phase:</span>
+                                <span style="color: var(--text-secondary);" data-i18n="label_phase">Phase:</span>
                                 <span id="currentPhase">1-2</span>
                             </p>
                             <p style="font-size: 0.875rem;">
-                                <span style="color: var(--text-secondary);">Focus:</span>
-                                <span id="currentFocus">Adaptasi teknik</span>
+                                <span style="color: var(--text-secondary);" data-i18n="label_focus">Focus:</span>
+                                <span id="currentFocus" data-i18n="focus_adaptation">Adaptasi teknik</span>
                             </p>
                         </div>
                     </div>
 
                     <div style="margin-top: 2rem;">
-                        <h3 style="margin-bottom: 1rem; font-size: 0.875rem; color: var(--text-secondary);">Training Parameters</h3>
+                        <h3 style="margin-bottom: 1rem; font-size: 0.875rem; color: var(--text-secondary);" data-i18n="params_title">Training Parameters</h3>
                         <div style="display: flex; flex-direction: column; gap: 0.5rem; font-size: 0.75rem;">
                             <div style="display: flex; justify-content: space-between;">
-                                <span>Warm-up:</span>
-                                <span style="color: var(--primary);">5-7 menit</span>
+                                <span data-i18n="param_warmup">Warm-up:</span>
+                                <span style="color: var(--primary);" data-i18n="param_warmup_value">5-7 menit</span>
                             </div>
                             <div style="display: flex; justify-content: space-between;">
-                                <span>Compound rest:</span>
-                                <span style="color: var(--primary);">2-3 menit</span>
+                                <span data-i18n="param_compound_rest">Compound rest:</span>
+                                <span style="color: var(--primary);" data-i18n="param_compound_rest_value">2-3 menit</span>
                             </div>
                             <div style="display: flex; justify-content: space-between;">
-                                <span>Isolation rest:</span>
-                                <span style="color: var(--primary);">60-120 detik</span>
+                                <span data-i18n="param_isolation_rest">Isolation rest:</span>
+                                <span style="color: var(--primary);" data-i18n="param_isolation_rest_value">60-120 detik</span>
                             </div>
                             <div style="display: flex; justify-content: space-between;">
-                                <span>Daily steps:</span>
-                                <span style="color: var(--primary);">8.000-10.000</span>
+                                <span data-i18n="param_daily_steps">Daily steps:</span>
+                                <span style="color: var(--primary);" data-i18n="param_daily_steps_value">8.000-10.000</span>
                             </div>
                         </div>
                     </div>
@@ -1078,22 +1105,22 @@
 
                 <div>
                     <div style="margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center;">
-                        <h2 style="font-size: 1.5rem; font-weight: 600;">Weekly Plan</h2>
+                        <h2 style="font-size: 1.5rem; font-weight: 600;" data-i18n="weekly_plan_title">Weekly Plan</h2>
                         <div style="display: flex; gap: 0.5rem; align-items: center;">
-                            <span style="color: var(--text-secondary); font-size: 0.875rem;">Week:</span>
+                            <span style="color: var(--text-secondary); font-size: 0.875rem;" data-i18n="label_week">Week:</span>
                             <select id="weekSelector" class="plan-selector" onchange="loadWeekData()">
-                                <option value="1">Week 1</option>
-                                <option value="2">Week 2</option>
-                                <option value="3">Week 3</option>
-                                <option value="4">Week 4</option>
-                                <option value="5">Week 5</option>
-                                <option value="6">Week 6</option>
-                                <option value="7">Week 7</option>
-                                <option value="8">Week 8</option>
-                                <option value="9">Week 9</option>
-                                <option value="10">Week 10</option>
-                                <option value="11">Week 11</option>
-                                <option value="12">Week 12</option>
+                                <option value="1" data-week="1">Week 1</option>
+                                <option value="2" data-week="2">Week 2</option>
+                                <option value="3" data-week="3">Week 3</option>
+                                <option value="4" data-week="4">Week 4</option>
+                                <option value="5" data-week="5">Week 5</option>
+                                <option value="6" data-week="6">Week 6</option>
+                                <option value="7" data-week="7">Week 7</option>
+                                <option value="8" data-week="8">Week 8</option>
+                                <option value="9" data-week="9">Week 9</option>
+                                <option value="10" data-week="10">Week 10</option>
+                                <option value="11" data-week="11">Week 11</option>
+                                <option value="12" data-week="12">Week 12</option>
                             </select>
                         </div>
                     </div>
@@ -1111,18 +1138,18 @@
 
         <div id="planner" class="tab-content plan-editor">
             <div class="plan-header">
-                <h2 style="font-size: 1.5rem; font-weight: 600;">Plan Editor</h2>
+                <h2 style="font-size: 1.5rem; font-weight: 600;" data-i18n="planner_heading">Plan Editor</h2>
                 <select id="programSelector" class="plan-selector">
                     <option value="athletic-lean">Athletic Lean Program</option>
                 </select>
             </div>
 
-            <div class="exercise-grid" aria-label="Daftar rencana latihan">
+            <div class="exercise-grid" aria-label="Daftar rencana latihan" data-i18n-attr="aria-label:aria_plan_list">
                 <div class="exercise-grid-header" aria-hidden="true">
-                    <div>Nama Latihan</div>
-                    <div>Bobot (kg)</div>
-                    <div>Sets</div>
-                    <div>Reps</div>
+                    <div data-i18n="col_name">Nama Latihan</div>
+                    <div data-i18n="col_weight">Bobot (kg)</div>
+                    <div data-i18n="col_sets">Sets</div>
+                    <div data-i18n="col_reps">Reps</div>
                 </div>
 
                 <div id="exercisesList">
@@ -1130,7 +1157,7 @@
                 </div>
             </div>
 
-            <button class="save-plan-btn" onclick="savePlan()">Simpan Program</button>
+            <button class="save-plan-btn" onclick="savePlan()" data-i18n="save_program">Simpan Program</button>
         </div>
     </div>
 
@@ -1138,9 +1165,9 @@
 
     <div id="guideModal" class="modal-overlay" onclick="if (event.target === this) closeGuide()">
         <div class="modal" role="dialog" aria-modal="true" aria-labelledby="guideTitle">
-            <button class="modal-close" onclick="closeGuide()" aria-label="Tutup">&times;</button>
+            <button class="modal-close" onclick="closeGuide()" aria-label="Tutup" data-i18n-attr="aria-label:aria_close">&times;</button>
             <div class="guide-media">
-                <img id="guideGif" alt="Animasi gerakan" loading="lazy">
+                <img id="guideGif" alt="Animasi gerakan" loading="lazy" data-i18n-attr="alt:guide_image_alt">
             </div>
             <div id="guideTitle" class="guide-title"></div>
             <div id="guideMeta" class="guide-meta"></div>
@@ -1151,6 +1178,232 @@
 
     <script src="exercise-guides.js"></script>
     <script>
+        const I18N = {
+            id: {
+                app_title: 'Gym Tracker - Program Athletic Lean',
+                tab_dashboard: 'Dashboard',
+                tab_planner: 'Plan Editor',
+                progress_title: 'Progres Program',
+                progress_percent: '{n}% Selesai',
+                stat_total_workouts: 'Total Latihan',
+                stat_streak: 'Hari Beruntun',
+                stat_exercises_done: 'Latihan Selesai',
+                stat_total_volume: 'Total Volume',
+                current_week_title: 'Minggu Ini',
+                label_week: 'Minggu:',
+                label_phase: 'Fase:',
+                label_focus: 'Fokus:',
+                params_title: 'Parameter Latihan',
+                param_warmup: 'Pemanasan:',
+                param_warmup_value: '5–7 menit',
+                param_compound_rest: 'Istirahat compound:',
+                param_compound_rest_value: '2–3 menit',
+                param_isolation_rest: 'Istirahat isolasi:',
+                param_isolation_rest_value: '60–120 detik',
+                param_daily_steps: 'Langkah harian:',
+                param_daily_steps_value: '8.000–10.000',
+                weekly_plan_title: 'Rencana Mingguan',
+                week_option: 'Minggu {n}',
+                planner_heading: 'Plan Editor',
+                col_name: 'Nama Latihan',
+                col_weight: 'Bobot (kg)',
+                col_sets: 'Sets',
+                col_reps: 'Reps',
+                save_program: 'Simpan Program',
+                aria_close: 'Tutup',
+                aria_location: 'Lokasi latihan',
+                aria_plan_list: 'Daftar rencana latihan',
+                guide_image_alt: 'Animasi gerakan',
+                day_1: 'Senin',
+                day_2: 'Selasa',
+                day_3: 'Rabu',
+                day_4: 'Kamis',
+                day_5: 'Jumat',
+                day_6: 'Sabtu',
+                day_7: 'Minggu',
+                prog_upper_a: 'Upper A',
+                prog_lower_a: 'Lower A',
+                prog_cardio: 'Kardio',
+                prog_upper_b: 'Upper B',
+                prog_lower_b: 'Lower B',
+                prog_recovery: 'Pemulihan',
+                status_done: 'Selesai',
+                status_pending: 'Belum',
+                label_today: 'Hari Ini',
+                label_progress: 'Progress',
+                label_location: 'Lokasi',
+                mode_gym: 'Gym',
+                mode_home: 'Home',
+                btn_guide: 'Panduan',
+                target_weight: 'Beban',
+                target_sets: 'Sets',
+                target_reps: 'Reps',
+                hint_no_target: 'Beban target belum diatur — isi di Plan Editor atau otomatis memakai beban minggu lalu.',
+                log_actual: 'Catat Aktual',
+                input_weight: 'Bobot:',
+                input_sets: 'Sets:',
+                input_reps: 'Reps:',
+                btn_done: 'Selesai',
+                btn_mark_done: 'Tandai Selesai',
+                badge_newly_done: 'Baru Selesai',
+                empty_location: 'Tidak ada latihan untuk mode ini. Ganti Lokasi Gym/Home.',
+                toast_plan_saved: 'Program berhasil disimpan!',
+                toast_fun_on: 'Mode seru diaktifkan! 🎉',
+                toast_fun_off: 'Mode normal dipulihkan',
+                toast_day_done: 'Hari selesai!',
+                toast_exercises_done: '{n}/{m} latihan selesai',
+                focus_adaptation: 'Adaptasi teknik',
+                focus_foundation: 'Membangun fondasi',
+                focus_overload: 'Progressive overload',
+                focus_consolidation: 'Konsolidasi & evaluasi',
+                guide_unavailable: 'Panduan untuk gerakan ini belum tersedia.',
+                guide_equipment: 'Equipment',
+                guide_target: 'Target',
+                guide_support: 'Pendukung',
+                equip_recovery: 'Pemulihan',
+                equip_all: 'Semua',
+                placeholder_sets_example: '3 × 8–12',
+                placeholder_reps_example: '8–12',
+                placeholder_kg: 'kg',
+                asset_unavailable: 'aset tidak tersedia'
+            },
+            en: {
+                app_title: 'Gym Tracker - Athletic Lean Program',
+                tab_dashboard: 'Dashboard',
+                tab_planner: 'Plan Editor',
+                progress_title: 'Program Progress',
+                progress_percent: '{n}% Complete',
+                stat_total_workouts: 'Total Workouts',
+                stat_streak: 'Day Streak',
+                stat_exercises_done: 'Exercises Done',
+                stat_total_volume: 'Total Volume',
+                current_week_title: 'Current Week',
+                label_week: 'Week:',
+                label_phase: 'Phase:',
+                label_focus: 'Focus:',
+                params_title: 'Training Parameters',
+                param_warmup: 'Warm-up:',
+                param_warmup_value: '5–7 minutes',
+                param_compound_rest: 'Compound rest:',
+                param_compound_rest_value: '2–3 minutes',
+                param_isolation_rest: 'Isolation rest:',
+                param_isolation_rest_value: '60–120 seconds',
+                param_daily_steps: 'Daily steps:',
+                param_daily_steps_value: '8,000–10,000',
+                weekly_plan_title: 'Weekly Plan',
+                week_option: 'Week {n}',
+                planner_heading: 'Plan Editor',
+                col_name: 'Exercise Name',
+                col_weight: 'Weight (kg)',
+                col_sets: 'Sets',
+                col_reps: 'Reps',
+                save_program: 'Save Program',
+                aria_close: 'Close',
+                aria_location: 'Workout location',
+                aria_plan_list: 'Program exercise list',
+                guide_image_alt: 'Exercise animation',
+                day_1: 'Monday',
+                day_2: 'Tuesday',
+                day_3: 'Wednesday',
+                day_4: 'Thursday',
+                day_5: 'Friday',
+                day_6: 'Saturday',
+                day_7: 'Sunday',
+                prog_upper_a: 'Upper A',
+                prog_lower_a: 'Lower A',
+                prog_cardio: 'Cardio',
+                prog_upper_b: 'Upper B',
+                prog_lower_b: 'Lower B',
+                prog_recovery: 'Recovery',
+                status_done: 'Done',
+                status_pending: 'Not yet',
+                label_today: 'Today',
+                label_progress: 'Progress',
+                label_location: 'Location',
+                mode_gym: 'Gym',
+                mode_home: 'Home',
+                btn_guide: 'Guide',
+                target_weight: 'Weight',
+                target_sets: 'Sets',
+                target_reps: 'Reps',
+                hint_no_target: 'Target weight not set — enter it in Plan Editor or it will use last week’s weight.',
+                log_actual: 'Log Actual',
+                input_weight: 'Weight:',
+                input_sets: 'Sets:',
+                input_reps: 'Reps:',
+                btn_done: 'Done',
+                btn_mark_done: 'Mark Done',
+                badge_newly_done: 'Newly completed',
+                empty_location: 'No exercises for this mode. Switch Gym/Home.',
+                toast_plan_saved: 'Program saved successfully!',
+                toast_fun_on: 'Fun mode enabled! 🎉',
+                toast_fun_off: 'Normal mode restored',
+                toast_day_done: 'Day complete!',
+                toast_exercises_done: '{n}/{m} exercises done',
+                focus_adaptation: 'Technique adaptation',
+                focus_foundation: 'Building foundation',
+                focus_overload: 'Progressive overload',
+                focus_consolidation: 'Consolidation & evaluation',
+                guide_unavailable: 'Guide for this exercise is not available yet.',
+                guide_equipment: 'Equipment',
+                guide_target: 'Target',
+                guide_support: 'Supporting',
+                equip_recovery: 'Recovery',
+                equip_all: 'All',
+                placeholder_sets_example: '3 × 8–12',
+                placeholder_reps_example: '8–12',
+                placeholder_kg: 'kg',
+                asset_unavailable: 'asset unavailable'
+            }
+        };
+
+        let currentLang = localStorage.getItem('gymTrackerLang') || 'id';
+
+        function t(key, vars) {
+            const dict = I18N[currentLang] || I18N.id;
+            let s = dict[key] != null ? dict[key] : (I18N.id[key] != null ? I18N.id[key] : key);
+            if (vars) Object.keys(vars).forEach(k => { s = s.replaceAll('{' + k + '}', vars[k]); });
+            return s;
+        }
+
+        function setLang(lang) {
+            if (!I18N[lang]) return;
+            currentLang = lang;
+            localStorage.setItem('gymTrackerLang', lang);
+            document.documentElement.lang = lang;
+            applyTranslations();
+            renderWeekGrid();
+            renderWorkoutDay();
+            updateDashboard();
+            initPlanEditor();
+            updateLangToggleUI();
+        }
+
+        function applyTranslations() {
+            document.querySelectorAll('#weekSelector option[data-week]').forEach(option => {
+                option.textContent = t('week_option', { n: option.dataset.week });
+            });
+
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                el.textContent = t(el.getAttribute('data-i18n'));
+            });
+
+            document.querySelectorAll('[data-i18n-attr]').forEach(el => {
+                el.getAttribute('data-i18n-attr').split(',').forEach(pair => {
+                    const [attr, key] = pair.split(':').map(s => s.trim());
+                    if (attr && key) el.setAttribute(attr, t(key));
+                });
+            });
+
+            document.title = t('app_title');
+        }
+
+        function updateLangToggleUI() {
+            document.querySelectorAll('.lang-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.lang === currentLang);
+            });
+        }
+
         // Data storage
         let workoutData = {};
         let currentWeek = 1;
@@ -1162,6 +1415,9 @@
         document.addEventListener('DOMContentLoaded', function() {
             loadStoredData();
             loadPlanData();
+            document.documentElement.lang = currentLang;
+            applyTranslations();
+            updateLangToggleUI();
             renderWeekGrid();
             selectDay(currentDay || getTodayDayNumber());
             switchTab('dashboard');
@@ -1189,8 +1445,7 @@
 
         // Get day name from day number
         function getDayNameFromNumber(dayNum) {
-            const days = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'];
-            return days[dayNum - 1] || 'Senin';
+            return t(`day_${dayNum}`);
         }
 
         // Get last week's data for the current location mode
@@ -1290,7 +1545,7 @@
             let html = '';
 
             if (selected && !available.includes(selected)) {
-                html += `<option value="${escapeHtml(selected)}" selected>${escapeHtml(selected)} (aset tidak tersedia)</option>`;
+                html += `<option value="${escapeHtml(selected)}" selected>${escapeHtml(selected)} (${escapeHtml(t('asset_unavailable'))})</option>`;
             }
 
             html += available.map(name => `<option value="${escapeHtml(name)}" ${name === selected ? 'selected' : ''}>${escapeHtml(name)}</option>`).join('');
@@ -1306,10 +1561,10 @@
                 const row = document.createElement('div');
                 row.className = 'exercise-row';
                 row.innerHTML = `
-                    <div class="row-name" data-label="Latihan"><select class="exercise-cell-input exercise-select" onchange="updateExercise(${index}, 'name', this.value)">${getExerciseOptions(exercise.name)}</select></div>
-                    <div class="row-weight" data-label="Bobot (kg)"><input type="number" min="0" step="0.5" class="exercise-cell-input" value="${exercise.weight ?? ''}" oninput="updateExercise(${index}, 'weight', parseFloat(this.value) || 0)" placeholder="0"></div>
-                    <div class="row-sets" data-label="Sets"><input type="text" class="exercise-cell-input" value="${escapeHtml(exercise.sets ?? '')}" oninput="updateExercise(${index}, 'sets', this.value)" placeholder="3 × 8–12"></div>
-                    <div class="row-reps" data-label="Reps"><input type="text" class="exercise-cell-input" value="${escapeHtml(exercise.reps ?? '')}" oninput="updateExercise(${index}, 'reps', this.value)" placeholder="8–12"></div>
+                    <div class="row-name" data-label="${t('col_name')}"><select class="exercise-cell-input exercise-select" onchange="updateExercise(${index}, 'name', this.value)">${getExerciseOptions(exercise.name)}</select></div>
+                    <div class="row-weight" data-label="${t('col_weight')}"><input type="number" min="0" step="0.5" class="exercise-cell-input" value="${exercise.weight ?? ''}" oninput="updateExercise(${index}, 'weight', parseFloat(this.value) || 0)" placeholder="${t('placeholder_kg')}"></div>
+                    <div class="row-sets" data-label="${t('col_sets')}"><input type="text" class="exercise-cell-input" value="${escapeHtml(exercise.sets ?? '')}" oninput="updateExercise(${index}, 'sets', this.value)" placeholder="${t('placeholder_sets_example')}"></div>
+                    <div class="row-reps" data-label="${t('col_reps')}"><input type="text" class="exercise-cell-input" value="${escapeHtml(exercise.reps ?? '')}" oninput="updateExercise(${index}, 'reps', this.value)" placeholder="${t('placeholder_reps_example')}"></div>
                 `;
                 exercisesList.appendChild(row);
             });
@@ -1331,7 +1586,7 @@
                 exercises: allExercises
             };
             localStorage.setItem('gymTrackerPlan', JSON.stringify(savedPlan));
-            showToast('Program saved successfully!', 'success');
+            showToast(t('toast_plan_saved'), 'success');
         }
 
         // Load plan from localStorage
@@ -1351,8 +1606,8 @@
             if (e.ctrlKey && e.shiftKey && e.key === 'F') {
                 e.preventDefault();
                 document.documentElement.classList.toggle('fun-mode');
-                showToast(document.documentElement.classList.contains('fun-mode') ? 
-                    'Fun mode enabled! 🎉' : 'Normal mode restored', 'success');
+                 showToast(document.documentElement.classList.contains('fun-mode') ? 
+                    t('toast_fun_on') : t('toast_fun_off'), 'success');
             }
         });
 
@@ -1392,15 +1647,15 @@
             document.getElementById('weeklyVolume').textContent = totalVolume + 'kg';
             
             const progressPercent = completedDays > 0 ? Math.round((completedDays / (12 * 7)) * 100) : 0;
-            document.getElementById('progressPercent').textContent = progressPercent;
+            document.getElementById('progressPercentText').textContent = t('progress_percent', { n: progressPercent });
             document.getElementById('progressFill').style.width = progressPercent + '%';
             
             // Update current week and phase based on progress
             const weekPhaseMap = {
-                '1-2': { week: 1, phase: '1-2', focus: 'Adaptasi teknik' },
-                '3-6': { week: 4, phase: '3-6', focus: 'Building foundation' },
-                '7-9': { week: 7, phase: '7-9', focus: 'Progressive overload' },
-                '10-12': { week: 10, phase: '10-12', focus: 'Consolidation & evaluation' }
+                '1-2': { week: 1, phase: '1-2', focusKey: 'focus_adaptation' },
+                '3-6': { week: 4, phase: '3-6', focusKey: 'focus_foundation' },
+                '7-9': { week: 7, phase: '7-9', focusKey: 'focus_overload' },
+                '10-12': { week: 10, phase: '10-12', focusKey: 'focus_consolidation' }
             };
             
             if (progressPercent < 17) {
@@ -1417,7 +1672,7 @@
         function updateWeekInfo(info) {
             document.getElementById('currentWeek').textContent = info.week;
             document.getElementById('currentPhase').textContent = info.phase;
-            document.getElementById('currentFocus').textContent = info.focus;
+            document.getElementById('currentFocus').textContent = t(info.focusKey);
         }
 
         // Load week data
@@ -1432,8 +1687,7 @@
             const weekGrid = document.getElementById('weekGrid');
             weekGrid.innerHTML = '';
             
-            const days = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'];
-            
+            const days = ['day_1', 'day_2', 'day_3', 'day_4', 'day_5', 'day_6', 'day_7'].map(key => t(key));
             for (let day = 0; day < 7; day++) {
                 const dayCard = document.createElement('div');
                 dayCard.className = 'day-card';
@@ -1447,8 +1701,8 @@
                     <div class="day-name">${days[day]}</div>
                     <div class="day-program">${program}</div>
                     <div class="day-location-status">
-                        <span class="mini-location ${gymCompleted ? 'done' : ''}">Gym ${gymCompleted ? '✓' : '·'}</span>
-                        <span class="mini-location ${homeCompleted ? 'done' : ''}">Home ${homeCompleted ? '✓' : '·'}</span>
+                        <span class="mini-location ${gymCompleted ? 'done' : ''}">${t('mode_gym')} ${gymCompleted ? t('status_done') : t('status_pending')}</span>
+                        <span class="mini-location ${homeCompleted ? 'done' : ''}">${t('mode_home')} ${homeCompleted ? t('status_done') : t('status_pending')}</span>
                     </div>
                 `;
                 
@@ -1515,20 +1769,20 @@
             if (!guide) {
                 gif.style.display = 'none';
                 meta.innerHTML = '';
-                steps.innerHTML = '<li>Panduan untuk gerakan ini belum tersedia.</li>';
+                steps.innerHTML = `<li>${t('guide_unavailable')}</li>`;
                 attribution.textContent = '';
             } else {
                 const media = guide.gif || guide.image;
                 gif.style.display = media ? 'block' : 'none';
                 if (media) {
                     gif.src = media;
-                    gif.alt = guide.sourceName || name;
+                    gif.alt = t('guide_image_alt');
                 }
 
                 const chips = [
-                    guide.equipment ? `Equipment: ${guide.equipment}` : '',
-                    guide.target ? `Target: ${guide.target}` : '',
-                    guide.muscleGroup ? `Pendukung: ${guide.muscleGroup}` : ''
+                    guide.equipment ? `${t('guide_equipment')}: ${guide.equipment}` : '',
+                    guide.target ? `${t('guide_target')}: ${guide.target}` : '',
+                    guide.muscleGroup ? `${t('guide_support')}: ${guide.muscleGroup}` : ''
                 ].filter(Boolean);
                 meta.innerHTML = chips.map(chip => `<span class="guide-chip">${chip}</span>`).join('');
 
@@ -1571,20 +1825,23 @@
             
             // Get current day name
             const currentDayName = getDayNameFromNumber(currentDay);
+            const dateLocale = currentLang === 'id' ? 'id-ID' : 'en-US';
+            const dateText = new Date().toLocaleDateString(dateLocale, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+            const weekLabel = t('label_week').replace(':', '');
             
             workoutDetail.innerHTML = `
                 <div class="workout-header">
                     <div>
                         <div class="workout-title">${currentDayName} - ${getProgramForDay(currentDay)}</div>
-                        <div class="workout-date">Minggu ${currentWeek} | ${new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</div>
+                        <div class="workout-date">${weekLabel} ${currentWeek} | ${dateText}</div>
                     </div>
                     <div style="text-align: right;">
                         <div style="display: flex; gap: 1rem; align-items: center; justify-content: flex-end; margin-bottom: 0.5rem;">
                             ${getTodayDayNumber() === currentDay ? 
-                                '<div style="background: rgba(16, 185, 129, 0.2); border: 1px solid var(--secondary); color: var(--secondary); padding: 0.25rem 0.75rem; border-radius: 0.5rem; font-size: 0.75rem; font-weight: 600;">Hari Ini</div>' : ''
+                                `<div style="background: rgba(16, 185, 129, 0.2); border: 1px solid var(--secondary); color: var(--secondary); padding: 0.25rem 0.75rem; border-radius: 0.5rem; font-size: 0.75rem; font-weight: 600;">${t('label_today')}</div>` : ''
                             }
                             <div style="text-align: right;">
-                                <div style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 0.25rem;">Progress</div>
+                                <div style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 0.25rem;">${t('label_progress')}</div>
                                 <div class="progress-bar" style="width: 100px; height: 6px;">
                                     <div class="progress-fill" style="width: ${progress}%"></div>
                                 </div>
@@ -1592,10 +1849,10 @@
                         </div>
                     </div>
                 </div>
-                <div class="location-toggle" role="tablist" aria-label="Lokasi latihan">
-                    <span class="location-label">Lokasi</span>
-                    <button class="location-btn ${locationMode === 'gym' ? 'active' : ''}" onclick="setLocationMode('gym')" role="tab" aria-selected="${locationMode === 'gym'}">Gym</button>
-                    <button class="location-btn ${locationMode === 'home' ? 'active' : ''}" onclick="setLocationMode('home')" role="tab" aria-selected="${locationMode === 'home'}">Home</button>
+                <div class="location-toggle" role="tablist" aria-label="${t('aria_location')}">
+                    <span class="location-label">${t('label_location')}</span>
+                    <button class="location-btn ${locationMode === 'gym' ? 'active' : ''}" onclick="setLocationMode('gym')" role="tab" aria-selected="${locationMode === 'gym'}">${t('mode_gym')}</button>
+                    <button class="location-btn ${locationMode === 'home' ? 'active' : ''}" onclick="setLocationMode('home')" role="tab" aria-selected="${locationMode === 'home'}">${t('mode_home')}</button>
                 </div>
                 <div class="exercise-list">
                     ${exercises.length ? exercises.map((exercise, index) => {
@@ -1605,54 +1862,55 @@
                         const lastWeekCompleted = lastWeekExerciseData.completed || false;
                         const targetWeight = getTargetWeight(exercise.name, lastWeekExerciseData);
                         const prescription = getPrescription(exercise);
+                        const equipmentLabel = exercise.equipment === 'Recovery' ? t('equip_recovery') : (exercise.equipment === 'Semua' ? t('equip_all') : exercise.equipment);
                         
                         return `
                             <div class="exercise-card" style="position: relative;">
                                 ${lastWeekCompleted && !completed ? 
-                                    '<div style="position: absolute; top: 0.5rem; right: 0.5rem; background: rgba(139, 92, 246, 0.2); border: 1px solid var(--purple); color: var(--purple); padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.65rem; font-weight: 600;">Baru Selesai</div>'
+                                    `<div style="position: absolute; top: 0.5rem; right: 0.5rem; background: rgba(139, 92, 246, 0.2); border: 1px solid var(--purple); color: var(--purple); padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.65rem; font-weight: 600;">${t('badge_newly_done')}</div>`
                                     : ''
                                 }
                                 <div class="exercise-header">
                                     <div class="exercise-info">
                                         <div class="exercise-name">${exercise.name}</div>
-                                        <div class="exercise-equipment">${exercise.equipment}</div>
+                                        <div class="exercise-equipment">${equipmentLabel}</div>
                                     </div>
-                                    <button class="guide-btn" data-name="${exercise.name}" onclick="openGuide(this.dataset.name)">Panduan</button>
+                                    <button class="guide-btn" data-name="${exercise.name}" onclick="openGuide(this.dataset.name)">${t('btn_guide')}</button>
                                 </div>
                                 <div class="exercise-target-grid">
                                     <div class="target-item weight">
-                                        <span class="target-label">Beban</span>
-                                        <span class="target-value">${targetWeight !== null ? targetWeight + ' kg' : '—'}</span>
+                                        <span class="target-label">${t('target_weight')}</span>
+                                        <span class="target-value">${targetWeight !== null ? targetWeight + ' ' + t('placeholder_kg') : '—'}</span>
                                     </div>
                                     <div class="target-item">
-                                        <span class="target-label">Sets</span>
+                                        <span class="target-label">${t('target_sets')}</span>
                                         <span class="target-value">${prescription.sets}</span>
                                     </div>
                                     <div class="target-item">
-                                        <span class="target-label">Reps</span>
+                                        <span class="target-label">${t('target_reps')}</span>
                                         <span class="target-value">${prescription.reps}</span>
                                     </div>
                                 </div>
-                                ${targetWeight === null ? '<div class="target-hint">Beban target belum diatur — isi di Plan Editor atau otomatis memakai beban minggu lalu.</div>' : ''}
-                                <div class="exercise-log-label">Catat Aktual</div>
+                                ${targetWeight === null ? `<div class="target-hint">${t('hint_no_target')}</div>` : ''}
+                                <div class="exercise-log-label">${t('log_actual')}</div>
                                 <div class="exercise-stats">
                                     <div class="stat-input">
-                                        <label>Bobot:</label>
-                                        <input type="number" value="${exerciseData.weight || ''}" oninput="updateExerciseData(${currentWeek}, ${currentDay}, ${index}, 'weight', parseFloat(this.value) || 0)" placeholder="kg">
+                                        <label>${t('input_weight')}</label>
+                                        <input type="number" value="${exerciseData.weight || ''}" oninput="updateExerciseData(${currentWeek}, ${currentDay}, ${index}, 'weight', parseFloat(this.value) || 0)" placeholder="${t('placeholder_kg')}">
                                     </div>
                                     <div class="stat-input">
-                                        <label>Sets:</label>
+                                        <label>${t('input_sets')}</label>
                                         <input type="text" value="${exerciseData.sets || ''}" oninput="updateExerciseData(${currentWeek}, ${currentDay}, ${index}, 'sets', this.value)" placeholder="1/3">
                                     </div>
                                     <div class="stat-input">
-                                        <label>Reps:</label>
+                                        <label>${t('input_reps')}</label>
                                         <input type="text" value="${exerciseData.reps || ''}" oninput="updateExerciseData(${currentWeek}, ${currentDay}, ${index}, 'reps', this.value)" placeholder="8/12">
                                     </div>
                                 </div>
-                                <button class="complete-btn ${completed ? 'completed' : ''}" onclick="toggleExerciseCompletion(${currentWeek}, ${currentDay}, ${index})" ${completed ? 'disabled' : ''}>${completed ? 'Selesai' : 'Tandai Selesai'}</button>
+                                <button class="complete-btn ${completed ? 'completed' : ''}" onclick="toggleExerciseCompletion(${currentWeek}, ${currentDay}, ${index})" ${completed ? 'disabled' : ''}>${completed ? t('btn_done') : t('btn_mark_done')}</button>
                             </div>
                         `;
-                    }).join('') : '<div class="empty-location">Tidak ada latihan untuk mode ini. Ganti Lokasi Gym/Home.</div>'}
+                    }).join('') : `<div class="empty-location">${t('empty_location')}</div>`}
                 </div>
             `;
         }
@@ -1845,8 +2103,18 @@
             return !!(dayData && dayData.completed);
         }
 
+        const PROGRAM_KEYS = {
+            1: 'prog_upper_a',
+            2: 'prog_lower_a',
+            3: 'prog_cardio',
+            4: 'prog_upper_b',
+            5: 'prog_lower_b',
+            6: 'prog_cardio',
+            7: 'prog_recovery'
+        };
+
         function getProgramForDay(day) {
-            return WORKOUT_PROGRAM[day]?.program || 'Recovery';
+            return WORKOUT_PROGRAM[day] ? t(PROGRAM_KEYS[day]) : t('prog_recovery');
         }
 
         // Update exercise data
@@ -1900,7 +2168,7 @@
             renderWeekGrid();
             renderWorkoutDay();
             updateDashboard();
-            showToast(allCompleted ? 'Hari selesai!' : `${completedCount}/${exercises.length} latihan selesai`, 'success');
+            showToast(allCompleted ? t('toast_day_done') : t('toast_exercises_done', { n: completedCount, m: exercises.length }), 'success');
         }
 
         // Initialize the program data
