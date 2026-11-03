@@ -447,6 +447,148 @@
             cursor: not-allowed;
         }
 
+        .guide-btn {
+            padding: 0.4rem 0.75rem;
+            background: transparent;
+            color: var(--info);
+            border: 1px solid var(--info);
+            border-radius: 0.5rem;
+            cursor: pointer;
+            font-size: 0.7rem;
+            font-weight: 600;
+            white-space: nowrap;
+            transition: all 0.2s ease;
+        }
+
+        .guide-btn:hover {
+            background: var(--info);
+            color: white;
+        }
+
+        /* Exercise guide modal */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(2, 6, 23, 0.75);
+            backdrop-filter: blur(4px);
+            z-index: 2000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+
+        .modal-overlay.open {
+            display: flex;
+        }
+
+        .modal {
+            position: relative;
+            width: 100%;
+            max-width: 520px;
+            max-height: 90vh;
+            overflow-y: auto;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5);
+            animation: fadeIn 0.2s ease;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 0.75rem;
+            right: 0.75rem;
+            width: 2rem;
+            height: 2rem;
+            border-radius: 50%;
+            border: 1px solid var(--border);
+            background: var(--bg-dark);
+            color: var(--text);
+            font-size: 1.25rem;
+            line-height: 1;
+            cursor: pointer;
+        }
+
+        .modal-close:hover {
+            background: var(--danger);
+            border-color: var(--danger);
+        }
+
+        .guide-media {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 1rem;
+        }
+
+        .guide-media img {
+            width: 220px;
+            height: 220px;
+            object-fit: contain;
+            border-radius: 0.75rem;
+            background: var(--bg-dark);
+            border: 1px solid var(--border);
+        }
+
+        .guide-title {
+            font-size: 1.15rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            padding-right: 2rem;
+        }
+
+        .guide-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+            margin-bottom: 1rem;
+        }
+
+        .guide-chip {
+            font-size: 0.7rem;
+            padding: 0.2rem 0.6rem;
+            border-radius: 999px;
+            background: rgba(99, 102, 241, 0.15);
+            border: 1px solid rgba(99, 102, 241, 0.4);
+            color: var(--text);
+            text-transform: capitalize;
+        }
+
+        .guide-steps {
+            margin: 0 0 1rem 1.1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            font-size: 0.85rem;
+            line-height: 1.5;
+            color: var(--text);
+        }
+
+        .guide-attribution {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            border-top: 1px solid var(--border);
+            padding-top: 0.75rem;
+        }
+
+        @media (max-width: 480px) {
+            .modal-overlay {
+                align-items: flex-end;
+                padding: 0;
+            }
+            .modal {
+                max-width: none;
+                border-radius: 1rem 1rem 0 0;
+                max-height: 88vh;
+                padding: 1.25rem;
+            }
+            .guide-media img {
+                width: 180px;
+                height: 180px;
+            }
+        }
+
         /* Tab Content */
         .tab-content {
             display: none;
@@ -875,6 +1017,20 @@
 
     <div id="toast" class="toast"></div>
 
+    <div id="guideModal" class="modal-overlay" onclick="if (event.target === this) closeGuide()">
+        <div class="modal" role="dialog" aria-modal="true" aria-labelledby="guideTitle">
+            <button class="modal-close" onclick="closeGuide()" aria-label="Tutup">&times;</button>
+            <div class="guide-media">
+                <img id="guideGif" alt="Animasi gerakan" loading="lazy">
+            </div>
+            <div id="guideTitle" class="guide-title"></div>
+            <div id="guideMeta" class="guide-meta"></div>
+            <ol id="guideSteps" class="guide-steps"></ol>
+            <div id="guideAttribution" class="guide-attribution"></div>
+        </div>
+    </div>
+
+    <script src="exercise-guides.js"></script>
     <script>
         // Data storage
         let workoutData = {};
@@ -1193,6 +1349,60 @@
             return { sets: exercise.sets, reps: exercise.reps || '-' };
         }
 
+        // Exercise guide: open modal with the movement demo and steps
+        function openGuide(name) {
+            const guides = (typeof EXERCISE_GUIDES !== 'undefined') ? EXERCISE_GUIDES : {};
+            const guide = guides[name];
+            const modal = document.getElementById('guideModal');
+            const gif = document.getElementById('guideGif');
+            const title = document.getElementById('guideTitle');
+            const meta = document.getElementById('guideMeta');
+            const steps = document.getElementById('guideSteps');
+            const attribution = document.getElementById('guideAttribution');
+
+            title.textContent = name;
+
+            if (!guide) {
+                gif.style.display = 'none';
+                meta.innerHTML = '';
+                steps.innerHTML = '<li>Panduan untuk gerakan ini belum tersedia.</li>';
+                attribution.textContent = '';
+            } else {
+                const media = guide.gif || guide.image;
+                gif.style.display = media ? 'block' : 'none';
+                if (media) {
+                    gif.src = media;
+                    gif.alt = guide.sourceName || name;
+                }
+
+                const chips = [
+                    guide.equipment ? `Equipment: ${guide.equipment}` : '',
+                    guide.target ? `Target: ${guide.target}` : '',
+                    guide.muscleGroup ? `Pendukung: ${guide.muscleGroup}` : ''
+                ].filter(Boolean);
+                meta.innerHTML = chips.map(chip => `<span class="guide-chip">${chip}</span>`).join('');
+
+                const stepList = Array.isArray(guide.steps) && guide.steps.length ? guide.steps : [guide.instructions || ''];
+                steps.innerHTML = stepList.map(step => `<li>${step}</li>`).join('');
+                attribution.textContent = guide.attribution || '';
+            }
+
+            modal.classList.add('open');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeGuide() {
+            const modal = document.getElementById('guideModal');
+            if (!modal) return;
+            modal.classList.remove('open');
+            document.body.style.overflow = '';
+        }
+
+        // Escape key closes the guide modal
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') closeGuide();
+        });
+
         // Render workout day with progress comparison
         function renderWorkoutDay() {
             const workoutDetail = document.querySelector('.workout-detail');
@@ -1252,6 +1462,7 @@
                                         <div class="exercise-name">${exercise.name}</div>
                                         <div class="exercise-equipment">${exercise.equipment}</div>
                                     </div>
+                                    <button class="guide-btn" data-name="${exercise.name}" onclick="openGuide(this.dataset.name)">Panduan</button>
                                 </div>
                                 <div class="exercise-target-grid">
                                     <div class="target-item weight">
