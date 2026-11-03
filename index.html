@@ -140,6 +140,11 @@
             padding: 1.5rem;
             border: 1px solid var(--border);
             height: fit-content;
+            align-self: start;
+            position: sticky;
+            top: 7rem;
+            max-height: calc(100vh - 8rem);
+            overflow-y: auto;
         }
 
         .progress-section {
@@ -377,11 +382,16 @@
             cursor: not-allowed;
         }
 
-        /* Plan Editor */
-        .plan-editor {
+        /* Tab Content */
+        .tab-content {
             display: none;
         }
 
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Plan Editor */
         .plan-editor.active {
             display: block;
         }
@@ -509,9 +519,12 @@
             .week-grid {
                 grid-template-columns: repeat(4, 1fr);
             }
+            /* Single-column layout: sticky would overlap the content below */
             .sidebar {
-                position: sticky;
-                top: calc(80px + 1rem);
+                position: static;
+                top: auto;
+                max-height: none;
+                overflow: visible;
             }
         }
 
@@ -694,7 +707,7 @@
                         </div>
                         <div class="stat-card">
                             <div class="stat-value" id="weeklyVolume">0kg</div>
-                            <div class="stat-label">Weekly Volume</div>
+                            <div class="stat-label">Total Volume</div>
                         </div>
                     </div>
 
@@ -764,6 +777,10 @@
                     <div class="week-grid" id="weekGrid">
                         <!-- Days will be populated by JavaScript -->
                     </div>
+
+                    <div class="workout-detail" style="margin-top: 1.5rem;">
+                        <!-- Selected day workout will be populated by JavaScript -->
+                    </div>
                 </div>
             </div>
         </div>
@@ -803,9 +820,24 @@
         // Initialize app
         document.addEventListener('DOMContentLoaded', function() {
             loadStoredData();
-            initPlanEditor();
+            loadPlanData();
+            renderWeekGrid();
+            selectDay(currentDay || getTodayDayNumber());
             switchTab('dashboard');
         });
+
+        // Toast notification
+        let toastTimer = null;
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            if (!toast) return;
+            toast.textContent = message;
+            toast.className = `toast show ${type}`;
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => {
+                toast.className = `toast ${type}`;
+            }, 3000);
+        }
 
         // Get today's day number (1=Monday, 2=Tuesday, etc.)
         function getTodayDayNumber() {
@@ -893,7 +925,7 @@
                 row.className = 'exercise-row';
                 row.innerHTML = `
                     <input type="text" class="exercise-input" value="${exercise.name}" oninput="updateExercise(${index}, 'name', this.value)" placeholder="Exercise name">
-                    <input type="number" class="exercise-input" value="${exercise.weight}" oninput="updateExercise(${index}, 'weight', parseFloat(this.value) || 0)" placeholder="Weight (kg)">
+                    <input type="number" class="exercise-input" value="${exercise.weight ?? ''}" oninput="updateExercise(${index}, 'weight', parseFloat(this.value) || 0)" placeholder="Weight (kg)">
                     <input type="text" class="exercise-input" value="${exercise.sets}" oninput="updateExercise(${index}, 'sets', this.value)" placeholder="Sets (e.g., 3 × 8–12)">
                     <input type="text" class="exercise-input" value="${exercise.reps}" oninput="updateExercise(${index}, 'reps', this.value)" placeholder="Reps (e.g., 8–12)">
                 `;
@@ -904,7 +936,10 @@
         // Update exercise data
         function updateExercise(index, field, value) {
             allExercises[index][field] = value;
-            saveData();
+            localStorage.setItem('gymTrackerPlan', JSON.stringify({
+                name: document.getElementById('programSelector').value,
+                exercises: allExercises
+            }));
         }
 
         // Save plan
@@ -948,19 +983,19 @@
             let completedDays = 0;
             
             for (let week = 1; week <= 12; week++) {
-                if (!workoutData[week]) workoutData[week] = {};
                 for (let day = 1; day <= 7; day++) {
                     const key = `week${week}_day${day}`;
-                    if (workoutData[key] && workoutData[key].completed) {
+                    const dayData = workoutData[key];
+                    if (!dayData) continue;
+
+                    if (dayData.completed) {
                         totalWorkouts++;
                         completedDays++;
-                        
-                        const dayData = workoutData[key];
-                        if (dayData.exercises) {
-                            exercisesDone += dayData.exercises.length;
-                            totalVolume += dayData.volume || 0;
-                        }
                     }
+                    if (dayData.exercises) {
+                        exercisesDone += dayData.exercises.filter(ex => ex && ex.completed).length;
+                    }
+                    totalVolume += dayData.volume || 0;
                 }
             }
             
@@ -1002,6 +1037,7 @@
         function loadWeekData() {
             currentWeek = parseInt(document.getElementById('weekSelector').value);
             renderWeekGrid();
+            renderWorkoutDay();
         }
 
         // Render week grid
@@ -1067,12 +1103,17 @@
         function renderWorkoutDay() {
             const workoutDetail = document.querySelector('.workout-detail');
             if (!workoutDetail) return;
-            
+
+            if (!currentDay) currentDay = getTodayDayNumber();
+
             const key = `week${currentWeek}_day${currentDay}`;
             const dayData = workoutData[key] || {};
             const exercises = getExercisesForDay(currentDay);
             const lastWeekData = getLastWeekData();
-            const lastWeekExerciseData = lastWeekData[currentDay] || {};
+            const completedCount = exercises.filter((_, idx) =>
+                dayData.exercises && dayData.exercises[idx] && dayData.exercises[idx].completed
+            ).length;
+            const progress = exercises.length ? Math.round((completedCount / exercises.length) * 100) : 0;
             
             // Get current day name
             const currentDayName = getDayNameFromNumber(currentDay);
@@ -1091,7 +1132,7 @@
                             <div style="text-align: right;">
                                 <div style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 0.25rem;">Progress</div>
                                 <div class="progress-bar" style="width: 100px; height: 6px;">
-                                    <div class="progress-fill" style="width: ${dayData.progress || 0}%"></div>
+                                    <div class="progress-fill" style="width: ${progress}%"></div>
                                 </div>
                             </div>
                         </div>
@@ -1114,7 +1155,7 @@
                                     <div class="exercise-info">
                                         <div class="exercise-name">${exercise.name}</div>
                                         <div class="exercise-equipment">${exercise.equipment}</div>
-                                        <div class="exercise-target">Target: ${exercise.sets} × ${exercise.reps}</div>
+                                        <div class="exercise-target">Target: ${exercise.sets}</div>
                                     </div>
                                     <div class="exercise-stats">
                                         <div class="stat-input">
@@ -1210,12 +1251,9 @@
             if (workoutData[key].exercises) {
                 workoutData[key].exercises.forEach(exercise => {
                     if (exercise.weight && exercise.sets && exercise.reps) {
-                        const sets = parseInt(exercise.sets.split('×')[0]) || 1;
-                        const repRange = exercise.reps.includes('–') || exercise.reps.includes('-') 
-                            ? exercise.reps.split('–')[1] || exercise.reps.split('-')[1] 
-                            : exercise.reps;
-                        const avgReps = repRange ? parseInt(repRange.split('/')[0]) : 10;
-                        volume += (exercise.weight * sets * avgReps) / 1000; // Convert to kg
+                        const sets = parseInt(exercise.sets.split('/')[0]) || 1;
+                        const reps = parseInt(exercise.reps.split('/')[0]) || 0;
+                        volume += exercise.weight * sets * reps;
                     }
                 });
             }
@@ -1243,13 +1281,16 @@
             
             workoutData[key].completed = allCompleted;
             
-            // Calculate progress
-            workoutData[key].progress = allCompleted ? 100 : 50;
+            // Calculate actual day progress
+            const completedCount = exercises.filter((_, idx) => {
+                return workoutData[key].exercises && workoutData[key].exercises[idx] && workoutData[key].exercises[idx].completed;
+            }).length;
+            workoutData[key].progress = exercises.length ? Math.round((completedCount / exercises.length) * 100) : 0;
             
             saveData();
             renderWorkoutDay();
             updateDashboard();
-            showToast(allCompleted ? 'Hari selesai!' : 'Latihan selesai!', allCompleted ? 'success' : 'success');
+            showToast(allCompleted ? 'Hari selesai!' : `${completedCount}/${exercises.length} latihan selesai`, 'success');
         }
 
         // Initialize the program data
@@ -1427,15 +1468,6 @@
             loadPlan();
         }
 
-        // Load saved data and initialize
-        function loadInitialData() {
-            loadPlanData();
-            renderWeekGrid();
-            selectDay(1);
-        }
-
-        // Load initial data
-        loadInitialData();
     </script>
 </body>
 </html>
