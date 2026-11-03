@@ -1,0 +1,1441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gym Tracker - Athletic Lean Program</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary: #10b981;
+            --secondary-dark: #059669;
+            --accent: #f59e0b;
+            --danger: #ef4444;
+            --info: #3b82f6;
+            --success: #22c55e;
+            --warning: #fbbf24;
+            --purple: #a855f7;
+            --pink: #ec4899;
+            --bg-dark: #0f172a;
+            --bg-light: #1e293b;
+            --bg-card: #334155;
+            --bg-hover: #3f6212;
+            --text: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --border: #475569;
+        }
+
+        /* Fun Color Variant */
+        :root.fun-mode {
+            --primary: #ec4899;
+            --primary-dark: #db2777;
+            --secondary: #10b981;
+            --secondary-dark: #059669;
+            --accent: #fbbf24;
+            --danger: #f43f5e;
+            --info: #3b82f6;
+            --success: #22c55e;
+            --warning: #fbbf24;
+            --purple: #a855f7;
+            --pink: #ec4899;
+            --bg-dark: #431123;
+            --bg-light: #581c36;
+            --bg-card: #762147;
+            --bg-hover: #933967;
+            --text: #f9e6f0;
+            --text-secondary: #fcd3e1;
+            --border: #b83280;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, var(--bg-dark) 0%, var(--bg-light) 100%);
+            color: var(--text);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        /* Header */
+        header {
+            background: rgba(17, 24, 39, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            padding: 1rem 2rem;
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .nav-tabs {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .tab-btn {
+            padding: 0.5rem 1.5rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            color: var(--text);
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .tab-btn:hover {
+            background: var(--primary);
+            border-color: var(--primary);
+            transform: translateY(-2px);
+        }
+
+        .tab-btn.active {
+            background: var(--primary);
+            border-color: var(--primary);
+        }
+
+        /* Main Container */
+        .main-container {
+            max-width: 1400px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+
+        /* Dashboard */
+        .dashboard {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .sidebar {
+            background: var(--bg-card);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            border: 1px solid var(--border);
+            height: fit-content;
+        }
+
+        .progress-section {
+            margin-bottom: 2rem;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: var(--bg-dark);
+            border-radius: 4px;
+            margin: 0.5rem 0;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--bg-dark);
+            padding: 1rem;
+            border-radius: 0.75rem;
+            text-align: center;
+            border: 1px solid var(--border);
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-top: 0.25rem;
+        }
+
+        /* Week Grid */
+        .week-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 0.75rem;
+        }
+
+        .day-card {
+            background: var(--bg-card);
+            border-radius: 1rem;
+            padding: 1rem;
+            border: 1px solid var(--border);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .day-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(99, 102, 241, 0.2);
+        }
+
+        .day-card.active {
+            border-color: var(--primary);
+            background: rgba(99, 102, 241, 0.1);
+        }
+
+        .day-name {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        .day-program {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        .day-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.7rem;
+            font-weight: 500;
+        }
+
+        .status-completed {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--secondary);
+            border: 1px solid var(--secondary);
+        }
+
+        .status-pending {
+            background: rgba(107, 114, 128, 0.2);
+            color: var(--text-secondary);
+            border: 1px solid var(--text-secondary);
+        }
+
+        /* Workout Detail */
+        .workout-detail {
+            background: var(--bg-card);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            border: 1px solid var(--border);
+        }
+
+        .workout-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .workout-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .workout-date {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        /* Exercise List */
+        .exercise-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .exercise-card {
+            background: var(--bg-dark);
+            border-radius: 0.75rem;
+            padding: 1rem;
+            border: 1px solid var(--border);
+        }
+
+        .exercise-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 0.75rem;
+        }
+
+        .exercise-info {
+            flex: 1;
+        }
+
+        .exercise-name {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+            font-size: 0.875rem;
+        }
+
+        .exercise-equipment {
+            font-size: 0.7rem;
+            color: var(--info);
+            margin-bottom: 0.25rem;
+        }
+
+        .exercise-target {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+        }
+
+        .exercise-stats {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .stat-input {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .stat-input label {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            min-width: 30px;
+        }
+
+        .stat-input input {
+            width: 50px;
+            padding: 0.25rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 0.25rem;
+            color: var(--text);
+            text-align: center;
+            font-size: 0.75rem;
+        }
+
+        .stat-input input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .complete-btn {
+            padding: 0.5rem 1rem;
+            background: var(--secondary);
+            color: white;
+            border: none;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            font-size: 0.75rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            align-self: flex-start;
+            margin-top: 0.5rem;
+        }
+
+        .complete-btn:hover {
+            background: var(--secondary-dark);
+            transform: translateY(-2px);
+        }
+
+        .complete-btn.completed {
+            background: var(--text-secondary);
+            cursor: not-allowed;
+        }
+
+        /* Plan Editor */
+        .plan-editor {
+            display: none;
+        }
+
+        .plan-editor.active {
+            display: block;
+        }
+
+        .plan-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .plan-selector {
+            padding: 0.5rem 1rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            color: var(--text);
+            font-size: 0.875rem;
+        }
+
+        .exercises-container {
+            display: grid;
+            grid-template-columns: 200px 1fr 200px 200px;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            padding: 0.5rem;
+            background: var(--bg-dark);
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+        }
+
+        .exercise-row {
+            display: contents;
+        }
+
+        .exercise-row > * {
+            padding: 0.5rem;
+            background: var(--bg-card);
+            border-radius: 0.25rem;
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+        }
+
+        .exercise-input {
+            width: 100%;
+            padding: 0.375rem;
+            background: var(--bg-dark);
+            border: 1px solid var(--border);
+            border-radius: 0.25rem;
+            color: var(--text);
+            font-size: 0.75rem;
+        }
+
+        .exercise-input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .save-plan-btn {
+            padding: 0.75rem 1.5rem;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            margin-top: 1rem;
+        }
+
+        .save-plan-btn:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+
+        /* Toast Notification */
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 0.75rem;
+            padding: 1rem 1.5rem;
+            color: var(--text);
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s ease;
+            z-index: 1000;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .toast.success {
+            border-color: var(--secondary);
+        }
+
+        .toast.error {
+            border-color: var(--danger);
+        }
+
+        /* Responsive */
+        @media (max-width: 1400px) {
+            .main-container {
+                max-width: 1200px;
+            }
+            .dashboard {
+                grid-template-columns: 280px 1fr;
+            }
+        }
+
+        @media (max-width: 1200px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+            .week-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+            .sidebar {
+                position: sticky;
+                top: calc(80px + 1rem);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .main-container {
+                margin: 1rem;
+                padding: 0 1rem;
+            }
+            .header-content {
+                padding: 0.75rem 1rem;
+            }
+            .nav-tabs {
+                display: none;
+            }
+            .week-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 0.5rem;
+            }
+            .day-card {
+                padding: 0.75rem;
+            }
+            .day-name {
+                font-size: 0.75rem;
+            }
+            .day-program {
+                font-size: 0.7rem;
+            }
+            .exercise-header {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            .exercise-stats {
+                width: 100%;
+                justify-content: space-between;
+            }
+            .exercises-container {
+                grid-template-columns: 1fr;
+                font-size: 0.7rem;
+            }
+            .exercise-row > * {
+                grid-column: 1;
+                font-size: 0.7rem;
+                padding: 0.375rem;
+            }
+            .exercise-input {
+                font-size: 0.7rem;
+            }
+            .complete-btn {
+                padding: 0.375rem 0.75rem;
+                font-size: 0.7rem;
+            }
+            .stat-card {
+                padding: 0.75rem;
+            }
+            .stat-value {
+                font-size: 1.25rem;
+            }
+            .stat-label {
+                font-size: 0.65rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .week-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 0.375rem;
+            }
+            .day-card {
+                padding: 0.5rem;
+            }
+            .day-name {
+                font-size: 0.7rem;
+            }
+            .day-status {
+                font-size: 0.65rem;
+                padding: 0.2rem 0.4rem;
+            }
+            .exercise-card {
+                padding: 0.75rem;
+            }
+            .exercise-name {
+                font-size: 0.7rem;
+            }
+            .exercise-equipment {
+                font-size: 0.65rem;
+            }
+            .exercise-target {
+                font-size: 0.65rem;
+            }
+            .stat-input {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.25rem;
+            }
+            .stat-input label {
+                font-size: 0.65rem;
+                min-width: auto;
+            }
+            .stat-input input {
+                width: 40px;
+                padding: 0.2rem;
+                font-size: 0.65rem;
+            }
+        }
+
+        /* Touch device optimizations */
+        @media (hover: none) and (pointer: coarse) {
+            .day-card {
+                min-height: 60px;
+            }
+            .complete-btn {
+                padding: 0.75rem 1.5rem;
+                font-size: 0.875rem;
+            }
+            .exercise-input {
+                padding: 0.5rem;
+                font-size: 0.875rem;
+            }
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-fade-in {
+            animation: fadeIn 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <div class="logo">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M14.5 8.13a4.5 4.5 0 1 1 0 9.74M9.5 12a4.5 4.5 0 1 0 0-9.74M3 17.5h18M3 7h18" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                Gym Tracker
+            </div>
+            <div class="nav-tabs">
+                <button class="tab-btn active" onclick="switchTab('dashboard')">Dashboard</button>
+                <button class="tab-btn" onclick="switchTab('planner')">Plan Editor</button>
+            </div>
+        </div>
+    </header>
+
+    <div class="main-container">
+        <div id="dashboard" class="tab-content">
+            <div class="dashboard">
+                <div class="sidebar">
+                    <div class="progress-section">
+                        <h3 style="margin-bottom: 1rem; font-size: 0.875rem; color: var(--text-secondary);">Program Progress</h3>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+                        </div>
+                        <p style="text-align: center; margin-top: 0.5rem; font-size: 0.75rem; color: var(--text-secondary);">
+                            <span id="progressPercent">0</span>% Complete
+                        </p>
+                    </div>
+
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-value" id="totalWorkouts">0</div>
+                            <div class="stat-label">Total Workouts</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="currentStreak">0</div>
+                            <div class="stat-label">Day Streak</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="exercisesDone">0</div>
+                            <div class="stat-label">Exercises Done</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="weeklyVolume">0kg</div>
+                            <div class="stat-label">Weekly Volume</div>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 2rem;">
+                        <h3 style="margin-bottom: 1rem; font-size: 0.875rem; color: var(--text-secondary);">Current Week</h3>
+                        <div id="weekInfo">
+                            <p style="font-size: 0.875rem; margin-bottom: 0.5rem;">
+                                <span style="color: var(--text-secondary);">Week:</span>
+                                <span id="currentWeek">1</span>
+                            </p>
+                            <p style="font-size: 0.875rem;">
+                                <span style="color: var(--text-secondary);">Phase:</span>
+                                <span id="currentPhase">1-2</span>
+                            </p>
+                            <p style="font-size: 0.875rem;">
+                                <span style="color: var(--text-secondary);">Focus:</span>
+                                <span id="currentFocus">Adaptasi teknik</span>
+                            </p>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 2rem;">
+                        <h3 style="margin-bottom: 1rem; font-size: 0.875rem; color: var(--text-secondary);">Training Parameters</h3>
+                        <div style="display: flex; flex-direction: column; gap: 0.5rem; font-size: 0.75rem;">
+                            <div style="display: flex; justify-content: space-between;">
+                                <span>Warm-up:</span>
+                                <span style="color: var(--primary);">5-7 menit</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between;">
+                                <span>Compound rest:</span>
+                                <span style="color: var(--primary);">2-3 menit</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between;">
+                                <span>Isolation rest:</span>
+                                <span style="color: var(--primary);">60-120 detik</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between;">
+                                <span>Daily steps:</span>
+                                <span style="color: var(--primary);">8.000-10.000</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <div style="margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center;">
+                        <h2 style="font-size: 1.5rem; font-weight: 600;">Weekly Plan</h2>
+                        <div style="display: flex; gap: 0.5rem; align-items: center;">
+                            <span style="color: var(--text-secondary); font-size: 0.875rem;">Week:</span>
+                            <select id="weekSelector" class="plan-selector" onchange="loadWeekData()">
+                                <option value="1">Week 1</option>
+                                <option value="2">Week 2</option>
+                                <option value="3">Week 3</option>
+                                <option value="4">Week 4</option>
+                                <option value="5">Week 5</option>
+                                <option value="6">Week 6</option>
+                                <option value="7">Week 7</option>
+                                <option value="8">Week 8</option>
+                                <option value="9">Week 9</option>
+                                <option value="10">Week 10</option>
+                                <option value="11">Week 11</option>
+                                <option value="12">Week 12</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="week-grid" id="weekGrid">
+                        <!-- Days will be populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="planner" class="tab-content plan-editor">
+            <div class="plan-header">
+                <h2 style="font-size: 1.5rem; font-weight: 600;">Plan Editor</h2>
+                <select id="programSelector" class="plan-selector">
+                    <option value="athletic-lean">Athletic Lean Program</option>
+                </select>
+            </div>
+
+            <div class="exercises-container">
+                <div style="font-weight: 600; color: var(--text-secondary); font-size: 0.75rem;">Nama Latihan</div>
+                <div style="font-weight: 600; color: var(--text-secondary); font-size: 0.75rem;">Bobot (kg)</div>
+                <div style="font-weight: 600; color: var(--text-secondary); font-size: 0.75rem;">Sets</div>
+                <div style="font-weight: 600; color: var(--text-secondary); font-size: 0.75rem;">Reps</div>
+            </div>
+
+            <div id="exercisesList">
+                <!-- Exercises will be populated by JavaScript -->
+            </div>
+
+            <button class="save-plan-btn" onclick="savePlan()">Simpan Program</button>
+        </div>
+    </div>
+
+    <div id="toast" class="toast"></div>
+
+    <script>
+        // Data storage
+        let workoutData = {};
+        let currentWeek = 1;
+        let currentDay = null;
+        let allExercises = [];
+
+        // Initialize app
+        document.addEventListener('DOMContentLoaded', function() {
+            loadStoredData();
+            initPlanEditor();
+            switchTab('dashboard');
+        });
+
+        // Get today's day number (1=Monday, 2=Tuesday, etc.)
+        function getTodayDayNumber() {
+            const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+            const today = new Date().getDay();
+            return today === 0 ? 1 : today; // Sunday maps to Monday
+        }
+
+        // Get day name from day number
+        function getDayNameFromNumber(dayNum) {
+            const days = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'];
+            return days[dayNum - 1] || 'Senin';
+        }
+
+        // Get last week's data
+        function getLastWeekData() {
+            const lastWeek = currentWeek > 1 ? currentWeek - 1 : 12;
+            const lastWeekData = {};
+            
+            for (let day = 1; day <= 7; day++) {
+                const key = `week${lastWeek}_day${day}`;
+                if (workoutData[key]) {
+                    lastWeekData[day] = {
+                        completed: workoutData[key].completed || false,
+                        exercises: workoutData[key].exercises || []
+                    };
+                }
+            }
+            
+            return lastWeekData;
+        }
+
+        // Calculate progress percentage
+        function calculateProgress(exercises) {
+            if (!exercises || exercises.length === 0) return 0;
+            const completed = exercises.filter(ex => ex.completed).length;
+            return Math.round((completed / exercises.length) * 100);
+        }
+
+        // Load saved data from localStorage
+        function loadStoredData() {
+            const storedData = localStorage.getItem('gymTrackerData');
+            if (storedData) {
+                workoutData = JSON.parse(storedData);
+            }
+            
+            // Auto-select today's day if not already selected
+            const todayDay = getTodayDayNumber();
+            if (!currentDay || currentDay !== todayDay) {
+                currentDay = todayDay;
+                renderWeekGrid();
+            }
+            
+            updateDashboard();
+        }
+
+        // Save data to localStorage
+        function saveData() {
+            localStorage.setItem('gymTrackerData', JSON.stringify(workoutData));
+        }
+
+        // Switch tabs
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            if (tabName === 'dashboard') {
+                document.querySelector('.tab-btn:nth-child(1)').classList.add('active');
+                document.getElementById('dashboard').classList.add('active');
+                updateDashboard();
+            } else if (tabName === 'planner') {
+                document.querySelector('.tab-btn:nth-child(2)').classList.add('active');
+                document.getElementById('planner').classList.add('active');
+                initPlanEditor();
+            }
+        }
+
+        // Initialize plan editor
+        function initPlanEditor() {
+            const exercisesList = document.getElementById('exercisesList');
+            exercisesList.innerHTML = '';
+            
+            allExercises.forEach((exercise, index) => {
+                const row = document.createElement('div');
+                row.className = 'exercise-row';
+                row.innerHTML = `
+                    <input type="text" class="exercise-input" value="${exercise.name}" oninput="updateExercise(${index}, 'name', this.value)" placeholder="Exercise name">
+                    <input type="number" class="exercise-input" value="${exercise.weight}" oninput="updateExercise(${index}, 'weight', parseFloat(this.value) || 0)" placeholder="Weight (kg)">
+                    <input type="text" class="exercise-input" value="${exercise.sets}" oninput="updateExercise(${index}, 'sets', this.value)" placeholder="Sets (e.g., 3 × 8–12)">
+                    <input type="text" class="exercise-input" value="${exercise.reps}" oninput="updateExercise(${index}, 'reps', this.value)" placeholder="Reps (e.g., 8–12)">
+                `;
+                exercisesList.appendChild(row);
+            });
+        }
+
+        // Update exercise data
+        function updateExercise(index, field, value) {
+            allExercises[index][field] = value;
+            saveData();
+        }
+
+        // Save plan
+        function savePlan() {
+            const savedPlan = {
+                name: document.getElementById('programSelector').value,
+                exercises: allExercises
+            };
+            localStorage.setItem('gymTrackerPlan', JSON.stringify(savedPlan));
+            showToast('Program saved successfully!', 'success');
+        }
+
+        // Load plan from localStorage
+        function loadPlan() {
+            const savedPlan = localStorage.getItem('gymTrackerPlan');
+            if (savedPlan) {
+                const plan = JSON.parse(savedPlan);
+                if (plan.name === 'athletic-lean') {
+                    allExercises = plan.exercises;
+                    initPlanEditor();
+                }
+            }
+        }
+
+        // Fun mode toggle
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey && e.shiftKey && e.key === 'F') {
+                e.preventDefault();
+                document.documentElement.classList.toggle('fun-mode');
+                showToast(document.documentElement.classList.contains('fun-mode') ? 
+                    'Fun mode enabled! 🎉' : 'Normal mode restored', 'success');
+            }
+        });
+
+        // Update dashboard
+        function updateDashboard() {
+            // Calculate stats
+            let totalWorkouts = 0;
+            let exercisesDone = 0;
+            let totalVolume = 0;
+            let completedDays = 0;
+            
+            for (let week = 1; week <= 12; week++) {
+                if (!workoutData[week]) workoutData[week] = {};
+                for (let day = 1; day <= 7; day++) {
+                    const key = `week${week}_day${day}`;
+                    if (workoutData[key] && workoutData[key].completed) {
+                        totalWorkouts++;
+                        completedDays++;
+                        
+                        const dayData = workoutData[key];
+                        if (dayData.exercises) {
+                            exercisesDone += dayData.exercises.length;
+                            totalVolume += dayData.volume || 0;
+                        }
+                    }
+                }
+            }
+            
+            // Update dashboard elements
+            document.getElementById('totalWorkouts').textContent = totalWorkouts;
+            document.getElementById('exercisesDone').textContent = exercisesDone;
+            document.getElementById('weeklyVolume').textContent = totalVolume + 'kg';
+            
+            const progressPercent = completedDays > 0 ? Math.round((completedDays / (12 * 7)) * 100) : 0;
+            document.getElementById('progressPercent').textContent = progressPercent;
+            document.getElementById('progressFill').style.width = progressPercent + '%';
+            
+            // Update current week and phase based on progress
+            const weekPhaseMap = {
+                '1-2': { week: 1, phase: '1-2', focus: 'Adaptasi teknik' },
+                '3-6': { week: 4, phase: '3-6', focus: 'Building foundation' },
+                '7-9': { week: 7, phase: '7-9', focus: 'Progressive overload' },
+                '10-12': { week: 10, phase: '10-12', focus: 'Consolidation & evaluation' }
+            };
+            
+            if (progressPercent < 17) {
+                updateWeekInfo(weekPhaseMap['1-2']);
+            } else if (progressPercent < 50) {
+                updateWeekInfo(weekPhaseMap['3-6']);
+            } else if (progressPercent < 75) {
+                updateWeekInfo(weekPhaseMap['7-9']);
+            } else {
+                updateWeekInfo(weekPhaseMap['10-12']);
+            }
+        }
+
+        function updateWeekInfo(info) {
+            document.getElementById('currentWeek').textContent = info.week;
+            document.getElementById('currentPhase').textContent = info.phase;
+            document.getElementById('currentFocus').textContent = info.focus;
+        }
+
+        // Load week data
+        function loadWeekData() {
+            currentWeek = parseInt(document.getElementById('weekSelector').value);
+            renderWeekGrid();
+        }
+
+        // Render week grid
+        function renderWeekGrid() {
+            const weekGrid = document.getElementById('weekGrid');
+            weekGrid.innerHTML = '';
+            
+            const days = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'];
+            
+            for (let day = 0; day < 7; day++) {
+                const dayCard = document.createElement('div');
+                dayCard.className = 'day-card';
+                dayCard.onclick = () => selectDay(day + 1);
+                
+                const key = `week${currentWeek}_day${day + 1}`;
+                const dayData = workoutData[key] || {};
+                const isCompleted = dayData.completed || false;
+                
+                const program = getProgramForDay(day + 1);
+                
+                dayCard.innerHTML = `
+                    <div class="day-name">${days[day]}</div>
+                    <div class="day-program">${program}</div>
+                    <div class="day-status ${isCompleted ? 'status-completed' : 'status-pending'}">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            ${isCompleted ? 
+                                '<path d="M20 6L9 17l-5-5" stroke-linecap="round" stroke-linejoin="round"/>' :
+                                '<path d="M12 2v4m0 12v4m4-4h4m-4-4H8m4-4H8" stroke-linecap="round" stroke-linejoin="round"/>'
+                            }
+                        </svg>
+                        <span>${isCompleted ? 'Selesai' : 'Belum'}</span>
+                    </div>
+                `;
+                
+                if (currentDay === day + 1) dayCard.classList.add('active');
+                
+                weekGrid.appendChild(dayCard);
+            }
+        }
+
+        // Get program for day
+        function getProgramForDay(day) {
+            const programs = {
+                1: 'Upper A',
+                2: 'Lower A',
+                3: 'Cardio',
+                4: 'Upper B',
+                5: 'Lower B',
+                6: 'Cardio',
+                7: 'Recovery'
+            };
+            return programs[day];
+        }
+
+        // Select day
+        function selectDay(day) {
+            currentDay = day;
+            renderWeekGrid();
+            renderWorkoutDay();
+        }
+
+        // Render workout day with progress comparison
+        function renderWorkoutDay() {
+            const workoutDetail = document.querySelector('.workout-detail');
+            if (!workoutDetail) return;
+            
+            const key = `week${currentWeek}_day${currentDay}`;
+            const dayData = workoutData[key] || {};
+            const exercises = getExercisesForDay(currentDay);
+            const lastWeekData = getLastWeekData();
+            const lastWeekExerciseData = lastWeekData[currentDay] || {};
+            
+            // Get current day name
+            const currentDayName = getDayNameFromNumber(currentDay);
+            
+            workoutDetail.innerHTML = `
+                <div class="workout-header">
+                    <div>
+                        <div class="workout-title">${currentDayName} - ${getProgramForDay(currentDay)}</div>
+                        <div class="workout-date">Minggu ${currentWeek} | ${new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</div>
+                    </div>
+                    <div style="text-align: right;">
+                        <div style="display: flex; gap: 1rem; align-items: center; justify-content: flex-end; margin-bottom: 0.5rem;">
+                            ${getTodayDayNumber() === currentDay ? 
+                                '<div style="background: rgba(16, 185, 129, 0.2); border: 1px solid var(--secondary); color: var(--secondary); padding: 0.25rem 0.75rem; border-radius: 0.5rem; font-size: 0.75rem; font-weight: 600;">Hari Ini</div>' : ''
+                            }
+                            <div style="text-align: right;">
+                                <div style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 0.25rem;">Progress</div>
+                                <div class="progress-bar" style="width: 100px; height: 6px;">
+                                    <div class="progress-fill" style="width: ${dayData.progress || 0}%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="exercise-list">
+                    ${exercises.map((exercise, index) => {
+                        const exerciseData = dayData.exercises && dayData.exercises[index] || {};
+                        const completed = exerciseData.completed || false;
+                        const lastWeekExerciseData = lastWeekData[currentDay]?.exercises?.[index] || {};
+                        const lastWeekCompleted = lastWeekExerciseData.completed || false;
+                        
+                        return `
+                            <div class="exercise-card" style="position: relative;">
+                                ${lastWeekCompleted && !completed ? 
+                                    '<div style="position: absolute; top: 0.5rem; right: 0.5rem; background: rgba(139, 92, 246, 0.2); border: 1px solid var(--purple); color: var(--purple); padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.65rem; font-weight: 600;">Baru Selesai</div>'
+                                    : ''
+                                }
+                                <div class="exercise-header">
+                                    <div class="exercise-info">
+                                        <div class="exercise-name">${exercise.name}</div>
+                                        <div class="exercise-equipment">${exercise.equipment}</div>
+                                        <div class="exercise-target">Target: ${exercise.sets} × ${exercise.reps}</div>
+                                    </div>
+                                    <div class="exercise-stats">
+                                        <div class="stat-input">
+                                            <label>Bobot:</label>
+                                            <input type="number" value="${exerciseData.weight || ''}" oninput="updateExerciseData(${currentWeek}, ${currentDay}, ${index}, 'weight', parseFloat(this.value) || 0)" placeholder="kg">
+                                        </div>
+                                        <div class="stat-input">
+                                            <label>Sets:</label>
+                                            <input type="text" value="${exerciseData.sets || ''}" oninput="updateExerciseData(${currentWeek}, ${currentDay}, ${index}, 'sets', this.value)" placeholder="1/3">
+                                        </div>
+                                        <div class="stat-input">
+                                            <label>Reps:</label>
+                                            <input type="text" value="${exerciseData.reps || ''}" oninput="updateExerciseData(${currentWeek}, ${currentDay}, ${index}, 'reps', this.value)" placeholder="8/12">
+                                        </div>
+                                    </div>
+                                </div>
+                                <button class="complete-btn ${completed ? 'completed' : ''}" onclick="toggleExerciseCompletion(${currentWeek}, ${currentDay}, ${index})" ${completed ? 'disabled' : ''}>${completed ? 'Selesai' : 'Tandai Selesai'}</button>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            `;
+        }
+
+        // Get day name
+
+        // Get exercises for day
+        function getExercisesForDay(day) {
+            const allDayExercises = {
+                1: [
+                    { name: 'Chest Press Machine', equipment: 'Gym', sets: '3 × 8–12', reps: '8–12' },
+                    { name: 'Lat Pulldown', equipment: 'Gym', sets: '3 × 10–12', reps: '10–12' },
+                    { name: 'Seated Cable Row', equipment: 'Gym', sets: '2 × 8–12', reps: '8–12' },
+                    { name: 'Incline Dumbbell Press', equipment: 'Home', sets: '2 × 8–12', reps: '8–12' },
+                    { name: 'Lateral Raise', equipment: 'Home', sets: '2 × 12–20', reps: '12–20' },
+                    { name: 'Triceps Pushdown', equipment: 'Home', sets: '2 × 10–15', reps: '10–15' },
+                    { name: 'Dumbbell Biceps Curl', equipment: 'Home', sets: '2 × 10–15', reps: '10–15' }
+                ],
+                2: [
+                    { name: 'Leg Press', equipment: 'Gym', sets: '3 × 8–12', reps: '8–12' },
+                    { name: 'Dumbbell Romanian Deadlift', equipment: 'Home', sets: '3 × 8–10', reps: '8–10' },
+                    { name: 'Seated Leg Curl', equipment: 'Gym', sets: '2 × 10–15', reps: '10–15' },
+                    { name: 'Sliding Towel Leg Curl', equipment: 'Home', sets: '2 × 10–15', reps: '10–15' },
+                    { name: 'Standing Calf Raise', equipment: 'Home', sets: '2 × 12–15', reps: '12–15' },
+                    { name: 'Plank', equipment: 'Home', sets: '2 × 30–45 detik', reps: '30–45 detik' }
+                ],
+                3: [
+                    { name: 'Treadmill / Stationary Bike', equipment: 'Gym', sets: '25–30 menit', reps: '-' },
+                    { name: 'Brisk Walking / Cycling', equipment: 'Home', sets: '25–30 menit', reps: '-' }
+                ],
+                4: [
+                    { name: 'Incline Chest Press', equipment: 'Gym', sets: '3 × 8–12', reps: '8–12' },
+                    { name: 'Chest Supported Dumbbell Row', equipment: 'Home', sets: '3 × 8–12', reps: '8–12' },
+                    { name: 'Neutral Grip Lat Pulldown', equipment: 'Gym', sets: '2 × 10–12', reps: '10–12' },
+                    { name: 'Dumbbell Pullover (Bench)', equipment: 'Home', sets: '2 × 10–12', reps: '10–12' },
+                    { name: 'Machine Shoulder Press', equipment: 'Gym', sets: '2 × 8–12', reps: '8–12' },
+                    { name: 'Chest-Supported Dumbbell Reverse Fly', equipment: 'Home', sets: '2 × 12–20', reps: '12–20' },
+                    { name: 'Dumbbell Lateral Raise', equipment: 'Home', sets: '2 × 12–20', reps: '12–20' },
+                    { name: 'Dumbbell Hammer Curl', equipment: 'Home', sets: '2 × 10–15', reps: '10–15' },
+                    { name: 'Overhead Dumbbell Triceps Extension', equipment: 'Home', sets: '2 × 10–15', reps: '10–15' }
+                ],
+                5: [
+                    { name: 'Hack Squat / Goblet Squat', equipment: 'Gym', sets: '3 × 8–12/kaki', reps: '8–12/kaki' },
+                    { name: 'Dumbbell Hip Thrust (Bench)', equipment: 'Home', sets: '3 × 8–12', reps: '8–12' },
+                    { name: 'Heel-Elevated Bodyweight Squat', equipment: 'Home', sets: '2 × 10–15', reps: '10–15' },
+                    { name: 'Sliding Towel Leg Curl', equipment: 'Home', sets: '2 × 10–15', reps: '10–15' },
+                    { name: 'Dumbbell Standing Calf Raise', equipment: 'Home', sets: '2 × 12–15', reps: '12–15' },
+                    { name: 'Dead Bug', equipment: 'Home', sets: '2 × 8–10/side', reps: '8–10/side' }
+                ],
+                6: [
+                    { name: 'Treadmill / Stationary Bike', equipment: 'Gym', sets: '25–30 menit', reps: '-' },
+                    { name: 'Brisk Walking / Cycling', equipment: 'Home', sets: '25–30 menit', reps: '-' }
+                ],
+                7: [
+                    { name: 'Rest / Jalan santai', equipment: 'Home', sets: 'Sesuai kebutuhan', reps: '-' }
+                ]
+            };
+            
+            return allDayExercises[day] || [];
+        }
+
+        // Update exercise data
+        function updateExerciseData(week, day, exerciseIndex, field, value) {
+            const key = `week${week}_day${day}`;
+            if (!workoutData[key]) workoutData[key] = {};
+            if (!workoutData[key].exercises) workoutData[key].exercises = [];
+            if (!workoutData[key].exercises[exerciseIndex]) workoutData[key].exercises[exerciseIndex] = {};
+            
+            workoutData[key].exercises[exerciseIndex][field] = value;
+            
+            // Calculate volume
+            let volume = 0;
+            if (workoutData[key].exercises) {
+                workoutData[key].exercises.forEach(exercise => {
+                    if (exercise.weight && exercise.sets && exercise.reps) {
+                        const sets = parseInt(exercise.sets.split('×')[0]) || 1;
+                        const repRange = exercise.reps.includes('–') || exercise.reps.includes('-') 
+                            ? exercise.reps.split('–')[1] || exercise.reps.split('-')[1] 
+                            : exercise.reps;
+                        const avgReps = repRange ? parseInt(repRange.split('/')[0]) : 10;
+                        volume += (exercise.weight * sets * avgReps) / 1000; // Convert to kg
+                    }
+                });
+            }
+            workoutData[key].volume = volume;
+            
+            saveData();
+            updateDashboard();
+        }
+
+        // Toggle exercise completion
+        function toggleExerciseCompletion(week, day, exerciseIndex) {
+            const key = `week${week}_day${day}`;
+            if (!workoutData[key]) workoutData[key] = {};
+            if (!workoutData[key].exercises) workoutData[key].exercises = [];
+            if (!workoutData[key].exercises[exerciseIndex]) workoutData[key].exercises[exerciseIndex] = {};
+            
+            const exerciseData = workoutData[key].exercises[exerciseIndex];
+            exerciseData.completed = !exerciseData.completed;
+            
+            // Check if all exercises are completed
+            const exercises = getExercisesForDay(day);
+            const allCompleted = exercises.every((_, idx) => {
+                return workoutData[key].exercises && workoutData[key].exercises[idx] && workoutData[key].exercises[idx].completed;
+            });
+            
+            workoutData[key].completed = allCompleted;
+            
+            // Calculate progress
+            workoutData[key].progress = allCompleted ? 100 : 50;
+            
+            saveData();
+            renderWorkoutDay();
+            updateDashboard();
+            showToast(allCompleted ? 'Hari selesai!' : 'Latihan selesai!', allCompleted ? 'success' : 'success');
+        }
+
+        // Initialize the program data
+        function initializeProgram() {
+            const defaultExercises = [];
+            
+            // Create comprehensive exercise list for the plan editor
+            const allProgramExercises = [];
+            
+            // Week 1-2: Adaptasi teknik (2 sets per exercise)
+            for (let week = 1; week <= 2; week++) {
+                const day1 = getExercisesForDay(1);
+                day1.forEach(exercise => {
+                    allProgramExercises.push({
+                        name: exercise.name,
+                        equipment: exercise.equipment,
+                        sets: '2 × 8–12',
+                        reps: '8–12'
+                    });
+                });
+                
+                const day2 = getExercisesForDay(2);
+                day2.forEach(exercise => {
+                    allProgramExercises.push({
+                        name: exercise.name,
+                        equipment: exercise.equipment,
+                        sets: '2 × 8–12',
+                        reps: '8–12'
+                    });
+                });
+                
+                const day3 = getExercisesForDay(3);
+                day3.forEach(exercise => {
+                    allProgramExercises.push({
+                        name: exercise.name,
+                        equipment: exercise.equipment,
+                        sets: '25–30 menit',
+                        reps: '-'
+                    });
+                });
+            }
+            
+            // Week 3-6: Building foundation
+            for (let week = 3; week <= 6; week++) {
+                const day1 = getExercisesForDay(1);
+                day1.forEach(exercise => {
+                    allProgramExercises.push({
+                        name: exercise.name,
+                        equipment: exercise.equipment,
+                        sets: '3 × 8–12',
+                        reps: '8–12'
+                    });
+                });
+                
+                const day2 = getExercisesForDay(2);
+                day2.forEach(exercise => {
+                    allProgramExercises.push({
+                        name: exercise.name,
+                        equipment: exercise.equipment,
+                        sets: '3 × 8–12',
+                        reps: '8–12'
+                    });
+                });
+                
+                const day3 = getExercisesForDay(3);
+                day3.forEach(exercise => {
+                    allProgramExercises.push({
+                        name: exercise.name,
+                        equipment: exercise.equipment,
+                        sets: '25–30 menit',
+                        reps: '-'
+                    });
+                });
+            }
+            
+            // Week 7-9: Progressive overload
+            for (let week = 7; week <= 9; week++) {
+                const day1 = getExercisesForDay(1);
+                day1.forEach(exercise => {
+                    allProgramExercises.push({
+                        name: exercise.name,
+                        equipment: exercise.equipment,
+                        sets: '3 × 8–12',
+                        reps: '8–12'
+                    });
+                });
+                
+                const day2 = getExercisesForDay(2);
+                day2.forEach(exercise => {
+                    allProgramExercises.push({
+                        name: exercise.name,
+                        equipment: exercise.equipment,
+                        sets: '3 × 8–12',
+                        reps: '8–12'
+                    });
+                });
+                
+                const day3 = getExercisesForDay(3);
+                day3.forEach(exercise => {
+                    allProgramExercises.push({
+                        name: exercise.name,
+                        equipment: exercise.equipment,
+                        sets: '25–30 menit',
+                        reps: '-'
+                    });
+                });
+            }
+            
+            // Week 10-12: Consolidation & evaluation
+            for (let week = 10; week <= 12; week++) {
+                const day1 = getExercisesForDay(1);
+                day1.forEach(exercise => {
+                    allProgramExercises.push({
+                        name: exercise.name,
+                        equipment: exercise.equipment,
+                        sets: '3 × 8–12',
+                        reps: '8–12'
+                    });
+                });
+                
+                const day2 = getExercisesForDay(2);
+                day2.forEach(exercise => {
+                    allProgramExercises.push({
+                        name: exercise.name,
+                        equipment: exercise.equipment,
+                        sets: '3 × 8–12',
+                        reps: '8–12'
+                    });
+                });
+                
+                const day3 = getExercisesForDay(3);
+                day3.forEach(exercise => {
+                    allProgramExercises.push({
+                        name: exercise.name,
+                        equipment: exercise.equipment,
+                        sets: '25–30 menit',
+                        reps: '-'
+                    });
+                });
+            }
+            
+            // Remove duplicates
+            const uniqueExercises = [];
+            const seen = new Set();
+            
+            allProgramExercises.forEach(exercise => {
+                const key = exercise.name;
+                if (!seen.has(key)) {
+                    seen.add(key);
+                    uniqueExercises.push(exercise);
+                }
+            });
+            
+            allExercises = uniqueExercises;
+            
+            // Save initial plan
+            savePlan();
+        }
+
+        // Load saved plan or initialize
+        function loadPlanData() {
+            const savedPlan = localStorage.getItem('gymTrackerPlan');
+            if (savedPlan) {
+                const plan = JSON.parse(savedPlan);
+                if (plan.name === 'athletic-lean') {
+                    allExercises = plan.exercises;
+                }
+            }
+            
+            if (allExercises.length === 0) {
+                initializeProgram();
+            }
+            
+            initPlanEditor();
+            loadPlan();
+        }
+
+        // Load saved data and initialize
+        function loadInitialData() {
+            loadPlanData();
+            renderWeekGrid();
+            selectDay(1);
+        }
+
+        // Load initial data
+        loadInitialData();
+    </script>
+</body>
+</html>
