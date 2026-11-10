@@ -1303,10 +1303,22 @@
 
                     <div class="workout-detail" style="margin-top: 1.5rem;">
                         <!-- Selected day workout will be populated by JavaScript -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 2rem;">
+                        <h3 style="margin-bottom: 1rem; font-size: 0.875rem; color: var(--text-secondary);" data-i18n="backup_title">Cadangan Data</h3>
+                        <p style="font-size: 0.7rem; color: var(--text-secondary); margin-bottom: 0.75rem;" data-i18n="backup_desc">Simpan progres agar tidak hilang saat cache dibersihkan.</p>
+                        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                            <button class="save-plan-btn" onclick="exportData()" style="flex: 1; min-width: 140px;" data-i18n="btn_export">Ekspor Data</button>
+                            <label style="flex: 1; min-width: 140px;">
+                                <button class="save-plan-btn" type="button" style="width: 100%;" data-i18n="btn_import">Impor Data</button>
+                                <input type="file" id="importFile" accept=".json" style="display: none;" onchange="importData(this)">
+                            </label>
+                        </div>
                     </div>
                 </div>
-            </div>
-        </div>
 
         <div id="planner" class="tab-content plan-editor">
             <div class="plan-header">
@@ -1462,7 +1474,14 @@
                 placeholder_sets_example: '3 × 8–12',
                 placeholder_reps_example: '8–12',
                 placeholder_kg: 'kg',
-                asset_unavailable: 'aset tidak tersedia'
+                asset_unavailable: 'aset tidak tersedia',
+                backup_title: 'Cadangan Data',
+                backup_desc: 'Simpan progres agar tidak hilang saat cache dibersihkan.',
+                btn_export: 'Ekspor Data',
+                btn_import: 'Impor Data',
+                toast_export: 'Data berhasil diekspor!',
+                toast_import: 'Data berhasil diimpor!',
+                toast_import_error: 'Gagal mengimpor data.'
             },
             en: {
                 app_title: 'Gym Tracker - Athletic Lean Program',
@@ -1559,7 +1578,14 @@
                 placeholder_sets_example: '3 × 8–12',
                 placeholder_reps_example: '8–12',
                 placeholder_kg: 'kg',
-                asset_unavailable: 'asset unavailable'
+                asset_unavailable: 'asset unavailable',
+                backup_title: 'Data Backup',
+                backup_desc: 'Save progress so it is not lost when cache is cleared.',
+                btn_export: 'Export Data',
+                btn_import: 'Import Data',
+                toast_export: 'Data exported successfully!',
+                toast_import: 'Data imported successfully!',
+                toast_import_error: 'Failed to import data.'
             }
         };
 
@@ -1671,7 +1697,7 @@
                 const key = `week${lastWeek}_day${day}`;
                 if (workoutData[key]) {
                     lastWeekData[day] = {
-                        completed: isDayCompleteAny(lastWeek, day),
+                        completed: isDayComplete(lastWeek, day),
                         exercises: workoutData[key].exercises || {}
                     };
                 }
@@ -1718,6 +1744,69 @@
         // Save data to localStorage
         function saveData() {
             localStorage.setItem('gymTrackerData', JSON.stringify(workoutData));
+        }
+
+        // Export workout data + plan to a JSON file (backup)
+        function exportData() {
+            const payload = {
+                version: 1,
+                exportedAt: new Date().toISOString(),
+                workoutData,
+                allExercises,
+                locationMode,
+                currentWeek,
+                currentLang
+            };
+            const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `gymtracker-backup-${new Date().toISOString().slice(0, 10)}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+            showToast(t('toast_export'), 'success');
+        }
+
+        // Import workout data + plan from a JSON file (restore)
+        function importData(fileInput) {
+            const file = fileInput && fileInput.files && fileInput.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    if (!data || typeof data !== 'object') throw new Error('Invalid format');
+
+                    workoutData = data.workoutData || {};
+                    allExercises = Array.isArray(data.allExercises) ? data.allExercises : [];
+                    locationMode = data.locationMode || 'gym';
+                    currentWeek = data.currentWeek || 1;
+                    if (data.currentLang) setLang(data.currentLang);
+
+                    localStorage.setItem('gymTrackerData', JSON.stringify(workoutData));
+                    localStorage.setItem('gymTrackerPlan', JSON.stringify({
+                        version: 2,
+                        name: 'athletic-lean',
+                        exercises: allExercises
+                    }));
+                    localStorage.setItem('gymTrackerLocation', locationMode);
+                    localStorage.setItem('gymTrackerWeek', currentWeek);
+
+                    renderWeekGrid();
+                    renderWorkoutDay();
+                    updateDashboard();
+                    initPlanEditor();
+                    document.querySelectorAll('.location-btn').forEach(btn => {
+                        btn.classList.toggle('active', btn.textContent.trim() === (locationMode === 'gym' ? t('mode_gym') : t('mode_home')));
+                    });
+
+                    fileInput.value = '';
+                    showToast(t('toast_import'), 'success');
+                } catch (err) {
+                    showToast(t('toast_import_error'), 'error');
+                }
+            };
+            reader.readAsText(file);
         }
 
         // Switch tabs
@@ -1972,7 +2061,7 @@
             
             for (let week = 1; week <= 12; week++) {
                 for (let day = 1; day <= 7; day++) {
-                    const completedInAnyMode = isDayCompleteAny(week, day);
+                    const completedInAnyMode = isDayComplete(week, day);
                     const dayData = workoutData[`week${week}_day${day}`];
 
                     if (dayData?.exercises) {
@@ -2039,16 +2128,14 @@
                 dayCard.className = 'day-card';
                 dayCard.onclick = () => selectDay(day + 1, true);
                 
-                const gymCompleted = isDayComplete(currentWeek, day + 1, 'gym');
-                const homeCompleted = isDayComplete(currentWeek, day + 1, 'home');
+                const dayCompleted = isDayComplete(currentWeek, day + 1);
                 const program = getProgramForDay(day + 1);
                 
                 dayCard.innerHTML = `
                     <div class="day-name">${days[day]}</div>
                     <div class="day-program">${program}</div>
                     <div class="day-location-status">
-                        <span class="mini-location ${gymCompleted ? 'done' : ''}">${t('mode_gym')} ${gymCompleted ? t('status_done') : t('status_pending')}</span>
-                        <span class="mini-location ${homeCompleted ? 'done' : ''}">${t('mode_home')} ${homeCompleted ? t('status_done') : t('status_pending')}</span>
+                        <span class="mini-location ${dayCompleted ? 'done' : ''}">${dayCompleted ? t('status_done') : t('status_pending')}</span>
                     </div>
                 `;
                 
@@ -2091,6 +2178,35 @@
                 return { sets: parts[0].trim(), reps: exercise.reps || parts[1].trim() };
             }
             return { sets: exercise.sets, reps: exercise.reps || '-' };
+        }
+
+        // Number of sets from prescription (e.g. "3 × 8–12" -> 3)
+        function getSetCount(prescription) {
+            const m = String(prescription.sets || '').match(/\d+/);
+            return m ? Math.max(1, parseInt(m[0], 10)) : 1;
+        }
+
+        // Parse leading number from a reps string (e.g. "8–12" -> 8, "30–45 detik" -> 30)
+        function parseRepsNumber(reps) {
+            const m = String(reps || '').match(/\d+/);
+            return m ? parseInt(m[0], 10) : 0;
+        }
+
+        // Ensure setLogs array exists with the right length; migrate legacy single weight
+        function ensureSetLogs(exerciseData, setCount) {
+            let logs = exerciseData.setLogs;
+            if (!Array.isArray(logs)) {
+                logs = [];
+                const legacyWeight = exerciseData.weight != null && exerciseData.weight !== '' ? parseFloat(exerciseData.weight) : null;
+                const legacyReps = exerciseData.reps != null ? String(exerciseData.reps) : '';
+                for (let i = 0; i < setCount; i++) {
+                    logs.push({ weight: (i === 0 && legacyWeight != null) ? legacyWeight : '', reps: (i === 0 ? legacyReps : '') });
+                }
+                exerciseData.setLogs = logs;
+            }
+            while (logs.length < setCount) logs.push({ weight: '', reps: '' });
+            while (logs.length > setCount) logs.pop();
+            return logs;
         }
 
         function setLocationMode(mode) {
@@ -2207,54 +2323,64 @@
                         const lastWeekCompleted = lastWeekExerciseData.completed || false;
                         const targetWeight = getTargetWeight(exercise, lastWeekExerciseData);
                         const prescription = getPrescription(exercise);
-                        const equipmentLabel = exercise.equipment === 'Recovery' ? t('equip_recovery') : (exercise.equipment === 'Semua' ? t('equip_all') : exercise.equipment);
+                                    const equipmentLabel = exercise.equipment === 'Recovery' ? t('equip_recovery') : (exercise.equipment === 'Semua' ? t('equip_all') : exercise.equipment);
+                                    const defaultSetCount = getSetCount(prescription);
+                                    const chosenSetCount = exerciseData.setCount != null ? parseInt(exerciseData.setCount, 10) : defaultSetCount;
+                                    const setLogs = ensureSetLogs(exerciseData, chosenSetCount);
                         
-                        return `
-                            <div class="exercise-card" style="position: relative;">
-                                ${lastWeekCompleted && !completed ? 
-                                    `<div style="position: absolute; top: 0.5rem; right: 0.5rem; background: rgba(139, 92, 246, 0.2); border: 1px solid var(--purple); color: var(--purple); padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.65rem; font-weight: 600;">${t('badge_newly_done')}</div>`
-                                    : ''
-                                }
-                                <div class="exercise-header">
-                                    <div class="exercise-info">
-                                        <div class="exercise-name">${exercise.name}</div>
-                                        <div class="exercise-equipment">${equipmentLabel}</div>
-                                    </div>
-                                    <button class="guide-btn" data-name="${exercise.name}" onclick="openGuide(this.dataset.name)">${t('btn_guide')}</button>
-                                </div>
-                                <div class="exercise-target-grid">
-                                    <div class="target-item weight">
-                                        <span class="target-label">${t('target_weight')}</span>
-                                        <span class="target-value">${targetWeight !== null ? targetWeight + ' ' + t('placeholder_kg') : '—'}</span>
-                                    </div>
-                                    <div class="target-item">
-                                        <span class="target-label">${t('target_sets')}</span>
-                                        <span class="target-value">${prescription.sets}</span>
-                                    </div>
-                                    <div class="target-item">
-                                        <span class="target-label">${t('target_reps')}</span>
-                                        <span class="target-value">${prescription.reps}</span>
-                                    </div>
-                                </div>
-                                ${targetWeight === null ? `<div class="target-hint">${t('hint_no_target')}</div>` : ''}
-                                <div class="exercise-log-label">${t('log_actual')}</div>
-                                <div class="exercise-stats">
-                                    <div class="stat-input">
-                                        <label>${t('input_weight')}</label>
-                                        <input type="number" value="${exerciseData.weight || ''}" oninput="updateExerciseData(${currentWeek}, ${currentDay}, '${exercise.id}', 'weight', parseFloat(this.value) || 0)" placeholder="${t('placeholder_kg')}">
-                                    </div>
-                                    <div class="stat-input">
-                                        <label>${t('input_sets')}</label>
-                                        <input type="text" value="${exerciseData.sets || ''}" oninput="updateExerciseData(${currentWeek}, ${currentDay}, '${exercise.id}', 'sets', this.value)" placeholder="1/3">
-                                    </div>
-                                    <div class="stat-input">
-                                        <label>${t('input_reps')}</label>
-                                        <input type="text" value="${exerciseData.reps || ''}" oninput="updateExerciseData(${currentWeek}, ${currentDay}, '${exercise.id}', 'reps', this.value)" placeholder="8/12">
-                                    </div>
-                                </div>
-                                <button class="complete-btn ${completed ? 'completed' : ''}" onclick="toggleExerciseCompletion(${currentWeek}, ${currentDay}, '${exercise.id}')" ${completed ? 'disabled' : ''}>${completed ? t('btn_done') : t('btn_mark_done')}</button>
-                            </div>
-                        `;
+                                    return `
+                                        <div class="exercise-card" style="position: relative;">
+                                            ${lastWeekCompleted && !completed ? 
+                                                `<div style="position: absolute; top: 0.5rem; right: 0.5rem; background: rgba(139, 92, 246, 0.2); border: 1px solid var(--purple); color: var(--purple); padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.65rem; font-weight: 600;">${t('badge_newly_done')}</div>`
+                                                : ''
+                                            }
+                                            <div class="exercise-header">
+                                                <div class="exercise-info">
+                                                    <div class="exercise-name">${exercise.name}</div>
+                                                    <div class="exercise-equipment">${equipmentLabel}</div>
+                                                </div>
+                                                <button class="guide-btn" data-name="${exercise.name}" onclick="openGuide(this.dataset.name)">${t('btn_guide')}</button>
+                                            </div>
+                                            <div class="exercise-target-grid">
+                                                <div class="target-item weight">
+                                                    <span class="target-label">${t('target_weight')}</span>
+                                                    <span class="target-value">${targetWeight !== null ? targetWeight + ' ' + t('placeholder_kg') : '—'}</span>
+                                                </div>
+                                                <div class="target-item">
+                                                    <span class="target-label">${t('target_sets')}</span>
+                                                    <span class="target-value">${prescription.sets}</span>
+                                                </div>
+                                                <div class="target-item">
+                                                    <span class="target-label">${t('target_reps')}</span>
+                                                    <span class="target-value">${prescription.reps}</span>
+                                                </div>
+                                            </div>
+                                            ${targetWeight === null ? `<div class="target-hint">${t('hint_no_target')}</div>` : ''}
+                                            <div class="exercise-log-label">${t('log_actual')}</div>
+                                            <div class="set-count-picker" style="margin-bottom: 0.5rem;">
+                                                <label style="font-size: 0.7rem; color: var(--text-secondary); display: block; margin-bottom: 0.2rem;">${t('input_sets')}</label>
+                                                <select oninput="updateExerciseData(${currentWeek}, ${currentDay}, '${exercise.id}', 'setCount', parseInt(this.value, 10)); renderWorkoutDay();" style="width: 100%; max-width: 140px; padding: 0.25rem; background: var(--bg-card); border: 1px solid var(--border); border-radius: 0.25rem; color: var(--text); font-size: 0.75rem;">
+                                                    ${[2,3,4,5,6].map(n => `<option value="${n}" ${n === chosenSetCount ? 'selected' : ''}>${n} Set</option>`).join('')}
+                                                </select>
+                                            </div>
+                                            <div class="exercise-stats">
+                                                ${setLogs.map((set, i) => `
+                                                    <div class="stat-input set-row" style="display: flex; gap: 0.5rem; align-items: center; margin-bottom: 0.35rem;">
+                                                        <span style="font-size: 0.7rem; color: var(--text-secondary); min-width: 28px; text-align: center;">Set ${i + 1}</span>
+                                                        <div style="flex: 1;">
+                                                            <label style="font-size: 0.7rem; color: var(--text-secondary); display: block; margin-bottom: 0.15rem;">${t('input_weight')}</label>
+                                                            <input type="number" step="0.5" value="${set.weight}" oninput="updateSetLog(${currentWeek}, ${currentDay}, '${exercise.id}', ${i}, 'weight', this.value)" placeholder="${t('placeholder_kg')}" style="width: 100%;">
+                                                        </div>
+                                                        <div style="flex: 1;">
+                                                            <label style="font-size: 0.7rem; color: var(--text-secondary); display: block; margin-bottom: 0.15rem;">${t('input_reps')}</label>
+                                                            <input type="text" value="${set.reps}" oninput="updateSetLog(${currentWeek}, ${currentDay}, '${exercise.id}', ${i}, 'reps', this.value)" placeholder="8/12" style="width: 100%;">
+                                                        </div>
+                                                    </div>
+                                                `).join('')}
+                                            </div>
+                                            <button class="complete-btn ${completed ? 'completed' : ''}" onclick="toggleExerciseCompletion(${currentWeek}, ${currentDay}, '${exercise.id}')" ${completed ? 'disabled' : ''}>${completed ? t('btn_done') : t('btn_mark_done')}</button>
+                                        </div>
+                                    `;
                     }).join('') : `<div class="empty-location">${t('empty_location')}</div>`}
                 </div>
             `;
@@ -2558,17 +2684,10 @@
             return allExercises.filter(exercise => exercise.day === day);
         }
 
-        function isDayComplete(week, day, mode) {
+        function isDayComplete(week, day) {
             const key = `week${week}_day${day}`;
             const dayData = workoutData[key];
-            if (!dayData?.exercises) return false;
-
-            const visible = getExercisesForLocation(day, mode);
-            return visible.length > 0 && visible.every(exercise => dayData.exercises[exercise.id]?.completed);
-        }
-
-        function isDayCompleteAny(week, day) {
-            return isDayComplete(week, day, 'gym') || isDayComplete(week, day, 'home');
+            return !!(dayData?.completed);
         }
 
         const PROGRAM_KEYS = {
@@ -2585,7 +2704,7 @@
             return WORKOUT_PROGRAM[day] ? t(PROGRAM_KEYS[day]) : t('prog_recovery');
         }
 
-        // Update exercise log data
+        // Update exercise log data (legacy single-field, kept for compatibility)
         function updateExerciseData(week, day, exerciseId, field, value) {
             const key = `week${week}_day${day}`;
             if (!workoutData[key]) workoutData[key] = {};
@@ -2595,18 +2714,48 @@
             workoutData[key].exercises[exerciseId][field] = value;
             workoutData[key].location = locationMode;
 
-            let volume = 0;
-            Object.values(workoutData[key].exercises).forEach(exercise => {
-                if (!exercise) return;
-                const weight = parseFloat(exercise.weight);
-                const sets = parseInt(String(exercise.sets || '').split('/')[0]) || 0;
-                const reps = parseInt(String(exercise.reps || '').split('/')[0]) || 0;
-                if (weight && sets && reps) volume += weight * sets * reps;
-            });
-            workoutData[key].volume = volume;
-
+            recalculateDayVolume(key);
             saveData();
             updateDashboard();
+        }
+
+        // Update a single set's weight/reps within an exercise log
+        function updateSetLog(week, day, exerciseId, setIndex, field, value) {
+            const key = `week${week}_day${day}`;
+            if (!workoutData[key]) workoutData[key] = {};
+            if (!workoutData[key].exercises) workoutData[key].exercises = {};
+            if (!workoutData[key].exercises[exerciseId]) workoutData[key].exercises[exerciseId] = {};
+            const exercise = workoutData[key].exercises[exerciseId];
+            if (!Array.isArray(exercise.setLogs)) exercise.setLogs = [];
+            const setLog = exercise.setLogs[setIndex];
+            if (!setLog) return;
+            setLog[field] = field === 'weight' ? (parseFloat(value) || 0) : value;
+            recalculateDayVolume(key);
+            saveData();
+            updateDashboard();
+        }
+
+        function recalculateDayVolume(key) {
+            const dayData = workoutData[key];
+            if (!dayData?.exercises) return;
+            let volume = 0;
+            Object.values(dayData.exercises).forEach(exercise => {
+                if (!exercise) return;
+                const logs = Array.isArray(exercise.setLogs) ? exercise.setLogs : null;
+                if (logs && logs.length) {
+                    logs.forEach(setLog => {
+                        const weight = parseFloat(setLog.weight) || 0;
+                        const reps = parseRepsNumber(setLog.reps);
+                        if (weight && reps) volume += weight * reps;
+                    });
+                } else {
+                    const weight = parseFloat(exercise.weight) || 0;
+                    const sets = parseInt(String(exercise.sets || '').split('/')[0]) || 0;
+                    const reps = parseRepsNumber(exercise.reps);
+                    if (weight && sets && reps) volume += weight * sets * reps;
+                }
+            });
+            dayData.volume = volume;
         }
 
         // Toggle exercise completion
@@ -2619,10 +2768,14 @@
             const exerciseData = workoutData[key].exercises[exerciseId];
             exerciseData.completed = !exerciseData.completed;
 
+            // Day is complete when all exercises in ANY location mode are done
+            const gymDone = allModeDone(key, day, 'gym');
+            const homeDone = allModeDone(key, day, 'home');
+            const allCompleted = gymDone || homeDone;
+
             const visible = getVisibleExercises(day);
             const isDone = exercise => workoutData[key].exercises[exercise.id]?.completed;
             const completedCount = visible.filter(isDone).length;
-            const allCompleted = visible.length > 0 && completedCount === visible.length;
 
             workoutData[key].completed = allCompleted;
             workoutData[key].location = locationMode;
@@ -2633,6 +2786,15 @@
             renderWorkoutDay();
             updateDashboard();
             showToast(allCompleted ? t('toast_day_done') : t('toast_exercises_done', { n: completedCount, m: visible.length }), 'success');
+        }
+
+        // True when every planned exercise for the given location mode is completed
+        function allModeDone(key, day, mode) {
+            const dayData = workoutData[key];
+            if (!dayData?.exercises) return false;
+            const visible = getExercisesForLocation(day, mode);
+            if (visible.length === 0) return false;
+            return visible.every(exercise => dayData.exercises[exercise.id]?.completed);
         }
 
         // Load saved plan (migrating legacy data if needed)
