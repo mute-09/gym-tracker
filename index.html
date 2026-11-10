@@ -2373,7 +2373,7 @@
                                                         </div>
                                                         <div style="flex: 1;">
                                                             <label style="font-size: 0.7rem; color: var(--text-secondary); display: block; margin-bottom: 0.15rem;">${t('input_reps')}</label>
-                                                            <input type="text" value="${set.reps}" oninput="updateSetLog(${currentWeek}, ${currentDay}, '${exercise.id}', ${i}, 'reps', this.value)" placeholder="8/12" style="width: 100%;">
+                                                            <input type="number" step="0.5" value="${set.reps}" oninput="updateSetLog(${currentWeek}, ${currentDay}, '${exercise.id}', ${i}, 'reps', this.value)" placeholder="reps" style="width: 100%;">
                                                         </div>
                                                     </div>
                                                 `).join('')}
