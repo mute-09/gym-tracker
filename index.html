@@ -2181,9 +2181,17 @@
         }
 
         // Number of sets from prescription (e.g. "3 × 8–12" -> 3)
+        // Jumlah maksimal set yang boleh ditampilkan (pencegah kolom berlebihan)
+        const MAX_SETS = 10;
+
+        // Jumlah set dari resep: ambil angka sebelum "×" (format "3 × 8–12").
+        // Jika tidak ada "×" (mis. "25–30 menit" atau "Sesuai kebutuhan"), default 1 set.
         function getSetCount(prescription) {
-            const m = String(prescription.sets || '').match(/\d+/);
-            return m ? Math.max(1, parseInt(m[0], 10)) : 1;
+            const setsStr = String(prescription.sets || '');
+            const beforeMultiplier = setsStr.split('×')[0];
+            const m = beforeMultiplier.match(/\d+/);
+            if (!m) return 1;
+            return Math.max(1, Math.min(MAX_SETS, parseInt(m[0], 10)));
         }
 
         // Parse leading number from a reps string (e.g. "8–12" -> 8, "30–45 detik" -> 30)
@@ -2325,7 +2333,9 @@
                         const prescription = getPrescription(exercise);
                                     const equipmentLabel = exercise.equipment === 'Recovery' ? t('equip_recovery') : (exercise.equipment === 'Semua' ? t('equip_all') : exercise.equipment);
                                     const defaultSetCount = getSetCount(prescription);
-                                    const chosenSetCount = exerciseData.setCount != null ? parseInt(exerciseData.setCount, 10) : defaultSetCount;
+                                    let chosenSetCount = exerciseData.setCount != null ? parseInt(exerciseData.setCount, 10) : defaultSetCount;
+                                    if (!chosenSetCount || chosenSetCount < 1) chosenSetCount = 1;
+                                    if (chosenSetCount > MAX_SETS) chosenSetCount = MAX_SETS;
                                     const setLogs = ensureSetLogs(exerciseData, chosenSetCount);
                         
                                     return `
