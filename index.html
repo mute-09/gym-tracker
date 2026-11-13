@@ -1367,7 +1367,7 @@
         <div class="modal" role="dialog" aria-modal="true" aria-labelledby="guideTitle">
             <button class="modal-close" onclick="closeGuide()" aria-label="Tutup" data-i18n-attr="aria-label:aria_close">&times;</button>
             <div class="guide-media">
-                <img id="guideGif" alt="Animasi gerakan" loading="lazy" data-i18n-attr="alt:guide_image_alt">
+                <img id="guideGif" alt="Ilustrasi gerakan" loading="lazy" data-i18n-attr="alt:guide_image_alt">
             </div>
             <div id="guideTitle" class="guide-title"></div>
             <div id="guideMeta" class="guide-meta"></div>
@@ -1422,7 +1422,7 @@
                 aria_close: 'Tutup',
                 aria_location: 'Lokasi latihan',
                 aria_plan_list: 'Daftar rencana latihan',
-                guide_image_alt: 'Animasi gerakan',
+                guide_image_alt: 'Ilustrasi gerakan',
                 day_1: 'Senin',
                 day_2: 'Selasa',
                 day_3: 'Rabu',
@@ -1526,7 +1526,7 @@
                 aria_close: 'Close',
                 aria_location: 'Workout location',
                 aria_plan_list: 'Program exercise list',
-                guide_image_alt: 'Exercise animation',
+                guide_image_alt: 'Exercise illustration',
                 day_1: 'Monday',
                 day_2: 'Tuesday',
                 day_3: 'Wednesday',
@@ -2234,6 +2234,7 @@
             const guide = guides[name];
             const modal = document.getElementById('guideModal');
             const gif = document.getElementById('guideGif');
+            const mediaWrap = gif.closest('.guide-media');
             const title = document.getElementById('guideTitle');
             const meta = document.getElementById('guideMeta');
             const steps = document.getElementById('guideSteps');
@@ -2243,12 +2244,14 @@
 
             if (!guide) {
                 gif.style.display = 'none';
+                if (mediaWrap) mediaWrap.style.display = 'none';
                 meta.innerHTML = '';
                 steps.innerHTML = `<li>${t('guide_unavailable')}</li>`;
                 attribution.textContent = '';
             } else {
                 const media = guide.gif || guide.image;
                 gif.style.display = media ? 'block' : 'none';
+                if (mediaWrap) mediaWrap.style.display = media ? 'flex' : 'none';
                 if (media) {
                     gif.src = media;
                     gif.alt = t('guide_image_alt');

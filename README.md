@@ -38,6 +38,10 @@ The app follows the Athletic Lean 12-week progression:
 
 - `index.html`: The main application file
 
+## Credits
+
+- Exercise illustrations: [Everkinetic](https://everkinetic.com) — [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/). See `assets/exercises/NOTICE.md` for details.
+
 ## Notes
 
 - All data is stored locally in your browser
