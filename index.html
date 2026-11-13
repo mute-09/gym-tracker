@@ -2188,6 +2188,11 @@
         // Jika tidak ada "×" (mis. "25–30 menit" atau "Sesuai kebutuhan"), default 1 set.
         function getSetCount(prescription) {
             const setsStr = String(prescription.sets || '');
+            // Durasi cardio (misal: "25-30 menit" atau "30-45 detik") bukan format set x reps
+            // Jika berisi satuan waktu, default ke 1 set saja
+            if (setsStr.includes("menit") || setsStr.includes("detik")) {
+                return 1;
+            }
             const beforeMultiplier = setsStr.split('×')[0];
             const m = beforeMultiplier.match(/\d+/);
             if (!m) return 1;
