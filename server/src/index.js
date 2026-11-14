@@ -4,6 +4,7 @@ import { login, logout, me, requireAuth } from './auth.js';
 import clients from './clients.js';
 import plans from './plans.js';
 import sessions from './sessions.js';
+import trainers from './trainers.js';
 
 const app = new Hono();
 
@@ -24,6 +25,7 @@ app.get('/api/me', me);
 app.route('/api/clients', clients);
 app.route('/api', plans);
 app.route('/api', sessions);
+app.route('/api/trainers', trainers);
 
 const port = Number(process.env.PORT || 3000);
 const hostname = process.env.HOST || '127.0.0.1';

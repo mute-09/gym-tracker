@@ -18,6 +18,7 @@ if (db.pragma('foreign_keys', { simple: true }) !== 1) {
   throw new Error('foreign_keys pragma failed to enable');
 }
 
+// Idempotent one-off migration: rebuild sessions if plan_day_id lacks ON DELETE SET NULL.
 function migrateSessionsPlanDayFk() {
   const table = db
     .prepare("SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'sessions'")
