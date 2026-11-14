@@ -86,7 +86,7 @@ function validPlanDay(planDayId, clientId) {
     .prepare(
       `SELECT pd.id FROM plan_days pd
        JOIN plans p ON p.id = pd.plan_id
-       WHERE pd.id = ? AND p.client_id = ? AND p.arsip = 0`
+       WHERE pd.id = ? AND p.client_id = ?`
     )
     .get(planDayId, clientId);
 }
