@@ -20,6 +20,17 @@ Klien = record DB, bukan user. v1 (`legacy/`) dibuang total, tidak ada migrasi.
 9. Tanpa Docker, tanpa ORM. SQL langsung via better-sqlite3.
 10. `updated_at` di-maintain oleh trigger SQLite (`trg_trainers_updated`, `trg_clients_updated`, `trg_plans_updated`, `trg_sessions_updated`). Handler TIDAK set manual. `foreign_keys = ON` wajib dan di-assert saat koneksi dibuka.
 
+## KONTRAK DELETE
+
+- Soft delete (`arsip = 1`): `clients`, `plans`, `sessions`.
+- Hard delete: `plan_days`, `plan_day_exercises`. Wajib audit `delete` per row
+  dengan `old_value` = full row sebelum `DELETE`.
+- Kalau nanti ada tabel baru dengan data historis → soft delete.
+  Kalau tabel struktural (child murni) → hard delete + audit.
+
+`plan_days` yang dihapus tidak menghapus sesi: `sessions.plan_day_id` memakai
+`ON DELETE SET NULL`, sehingga sesi tetap ada tanpa plan day.
+
 ## STACK
 
 - Backend: Node 20+, Hono, better-sqlite3, zod, cookie.

@@ -19,7 +19,8 @@ CREATE TABLE IF NOT EXISTS plan_day_exercises(id INTEGER PRIMARY KEY, plan_day_i
 CREATE TABLE IF NOT EXISTS muscle_groups(id INTEGER PRIMARY KEY, nama TEXT UNIQUE NOT NULL);
 
 CREATE TABLE IF NOT EXISTS sessions(id INTEGER PRIMARY KEY, client_id INT NOT NULL REFERENCES clients(id),
-  tanggal TEXT NOT NULL, plan_day_id INT REFERENCES plan_days(id), catatan TEXT DEFAULT '',
+  tanggal TEXT NOT NULL, plan_day_id INT REFERENCES plan_days(id) ON DELETE SET NULL,
+  catatan TEXT DEFAULT '',
   arsip INTEGER DEFAULT 0,
   created_at TEXT DEFAULT (datetime('now')), updated_at TEXT DEFAULT (datetime('now')));
 
