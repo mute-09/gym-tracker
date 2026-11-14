@@ -49,6 +49,9 @@ web/
 deploy/
   gym-api.service
   nginx.conf.snippet
+  .env.production.example
+  deploy.sh             # build helper lokal, tanpa SSH/rsync
+DEPLOY.md               # panduan deploy produksi
 ```
 
 ## Data Model
@@ -107,11 +110,24 @@ Frontend hanya merender response; tidak ada perhitungan di klien.
 
 ## Deployment
 
-- Backend dijalankan systemd (`deploy/gym-api.service`) sebagai user non-root
-  pada `127.0.0.1:3000`; DB SQLite di direktori data persisten.
-- nginx menyajikan build Vite dan mem-proxy `/api/*`.
-- Cloudflare Tunnel menerminasi TLS; cookie `Secure` tetap valid.
-- Tidak ada CORS longgar karena frontend dan API same-origin.
+- **v1** tetap di `/home/muthi/gym-assitan/` (nginx + Cloudflare Tunnel lama)
+  dan tidak disentuh oleh v2.
+- **v2** dipasang di `/home/muthi/gym-assitan-v2/` dengan hostname terpisah.
+- Backend systemd `deploy/gym-api.service`:
+  - `User=muthi`
+  - `WorkingDirectory=/home/muthi/gym-assitan-v2/server`
+  - `ExecStart=/usr/bin/node src/index.js`
+  - `EnvironmentFile=/home/muthi/gym-assitan-v2/.env`
+  - listen `127.0.0.1:3000` (default `HOST`/`PORT`)
+- Database SQLite persisten di
+  `/home/muthi/gym-assitan-v2/data/gym.db` melalui `DB_PATH` absolut.
+- Frontend statis `web/dist/` disajikan nginx v2; `/api/` di-proxy ke
+  `127.0.0.1:3000` dengan same-origin (tanpa CORS longgar).
+- SPA fallback (`try_files $uri $uri/ /index.html`) wajib agar refresh route
+  seperti `/clients/:id` tidak 404.
+- Cloudflare Tunnel v2 menerminasi TLS dan meneruskan ke nginx v2; cookie
+  `Secure` tetap valid.
+- Panduan langkah demi langkah ada di `DEPLOY.md`; artefak di `deploy/`.
 
 ## Invariants
 

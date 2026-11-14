@@ -1,0 +1,22 @@
+[Unit]
+Description=Gym Tracker v2 API
+After=network.target
+
+[Service]
+Type=simple
+User=muthi
+Group=muthi
+WorkingDirectory=/home/muthi/gym-assitan-v2/server
+EnvironmentFile=/home/muthi/gym-assitan-v2/.env
+ExecStart=/usr/bin/node src/index.js
+Restart=always
+RestartSec=3
+
+# Minimal hardening
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ReadWritePaths=/home/muthi/gym-assitan-v2
+
+[Install]
+WantedBy=multi-user.target

@@ -1,49 +1,65 @@
-# Gym Tracker - Athletic Lean Program
+# Gym Tracker v2
 
-A comprehensive fitness tracking application for the Athletic Lean 12-week workout program.
+Aplikasi web multi-trainer untuk mencatat progres latihan klien. Trainer login,
+klien adalah record database. v1 lama diarsipkan di `legacy/` dan tidak dipakai.
 
-## Features
+## Development
 
-- **Weekly Workout Plan**: View and track all 12 weeks of the Athletic Lean program
-- **Exercise Tracking**: Record weight and reps per set for each exercise (pick 2–6 sets)
-- **Day-Level Completion**: Finishing a day marks it done regardless of Gym or Home mode
-- **Progress Monitoring**: Visualize completion progress with stats and charts
-- **Plan Editor**: Customize and save your workout program
-- **Responsive Design**: Works on desktop, tablet, and mobile devices
-- **Local Storage**: Your data persists across sessions
-- **Data Backup**: Export and import your workout data as JSON so progress survives cache clearing
+Prasyarat: Node.js 20+ dan npm.
 
-## How to Use
+### Backend
 
-1. **Dashboard**: View your overall progress, statistics, and current week
-2. **Week Selection**: Choose any week (1-12) from the dropdown to view
-3. **Day Selection**: Click on any day to see detailed exercises
-4. **Exercise Tracking**: For each exercise:
-   - Choose number of sets (2–6)
-   - Enter weight (kg) and reps per set
-5. **Mark Complete**: Toggle exercises as completed; day is done when all sets in a mode are finished
-6. **Plan Editor**: Access the planner tab to customize exercises
-7. **Data Backup**: Use **Ekspor Data / Impor Data** on the dashboard to save or restore progress
+```bash
+cp server/.env.example .env
+# edit .env bila perlu; untuk dev lewat HTTP, matikan cookie secure
+cd server
+npm ci
+set -a; . ../.env; set +a
+npm run seed
+npm run dev
+```
 
-## Program Structure
+Backend berjalan di `http://127.0.0.1:3000`. `npm run seed` membuat akun admin
+dari nilai di `.env`.
 
-The app follows the Athletic Lean 12-week progression:
+### Frontend
 
-- **Weeks 1-2**: Adaptasi teknik (2 sets per exercise)
-- **Weeks 3-6**: Building foundation (standard sets)
-- **Weeks 7-9**: Progressive overload (RIR 1-2)
-- **Weeks 10-12**: Consolidation & evaluation
+```bash
+cd web
+npm ci
+npm run dev -- --host 127.0.0.1
+```
 
-## Files
+Buka `http://127.0.0.1:5173`. Vite mem-proxy `/api` ke backend port 3000.
 
-- `index.html`: The main application file
+### Build
 
-## Credits
+```bash
+cd web
+npm run build
+```
 
-- Exercise illustrations: [Everkinetic](https://everkinetic.com) — [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/). See `assets/exercises/NOTICE.md` for details.
+Hasil build ada di `web/dist/`.
 
-## Notes
+## Deploy
 
-- All data is stored locally in your browser
-- The application is self-contained and requires no installation
-- Use the "Plan Editor" tab to customize exercises if needed
+Panduan produksi lengkap ada di [DEPLOY.md](DEPLOY.md). Ringkasnya:
+
+- v1 tetap di `/home/muthi/gym-assitan/` dan tidak disentuh.
+- v2 dipasang di `/home/muthi/gym-assitan-v2/`.
+- Backend via systemd `gym-api`, listen `127.0.0.1:3000`.
+- Frontend statis `web/dist/` disajikan nginx, `/api/` di-proxy ke backend.
+- Akses publik lewat Cloudflare Tunnel.
+
+Artefak deploy ada di `deploy/`:
+
+- `gym-api.service`
+- `nginx.conf.snippet`
+- `.env.production.example`
+- `deploy.sh` (build helper, tidak melakukan SSH/rsync)
+
+## Dokumentasi
+
+- [DEPLOY.md](DEPLOY.md) — langkah deploy, verifikasi, rollback, backup.
+- [ARCHITECTURE.md](ARCHITECTURE.md) — arsitektur dan keputusan teknis.
+- [AGENTS.md](AGENTS.md) — aturan kerja dan spesifikasi milestone.
