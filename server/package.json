@@ -1,0 +1,21 @@
+{
+  "name": "gym-tracker-server",
+  "version": "2.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "node --watch src/index.js",
+    "start": "node src/index.js",
+    "seed": "node seed.js"
+  },
+  "dependencies": {
+    "@hono/node-server": "^2.1.8",
+    "bcryptjs": "^3.0.3",
+    "better-sqlite3": "^13.1.1",
+    "hono": "^4.13.18",
+    "zod": "^4.6.7"
+  }
+}
