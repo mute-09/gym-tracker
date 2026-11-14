@@ -22,7 +22,7 @@ Aplikasi multi-trainer untuk mencatat progres latihan klien. v1 diarsipkan di
 | Auth | cookie httpOnly, token acak di `auth_sessions` |
 | Hash password | bcrypt (cost 12) |
 | Frontend | React + Vite + TypeScript |
-| Serve | nginx statis + proxy `/api` ke `127.0.0.1:3000` |
+| Serve | nginx statis + proxy `/api` ke `127.0.0.1:3005` |
 | Tunnel | Cloudflare Tunnel |
 
 ## Layout
@@ -118,11 +118,11 @@ Frontend hanya merender response; tidak ada perhitungan di klien.
   - `WorkingDirectory=/home/muthi/gym-assitan-v2/server`
   - `ExecStart=/usr/bin/node src/index.js`
   - `EnvironmentFile=/home/muthi/gym-assitan-v2/.env`
-  - listen `127.0.0.1:3000` (default `HOST`/`PORT`)
+  - listen `127.0.0.1:3005` (`PORT` di `.env`)
 - Database SQLite persisten di
   `/home/muthi/gym-assitan-v2/data/gym.db` melalui `DB_PATH` absolut.
 - Frontend statis `web/dist/` disajikan nginx v2; `/api/` di-proxy ke
-  `127.0.0.1:3000` dengan same-origin (tanpa CORS longgar).
+  `127.0.0.1:3005` dengan same-origin (tanpa CORS longgar).
 - SPA fallback (`try_files $uri $uri/ /index.html`) wajib agar refresh route
   seperti `/clients/:id` tidak 404.
 - Cloudflare Tunnel v2 menerminasi TLS dan meneruskan ke nginx v2; cookie

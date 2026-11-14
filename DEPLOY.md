@@ -48,7 +48,7 @@ nano .env
 
 Isi semua placeholder di `.env` sesuai komentar template. Minimal:
 
-- port backend (default 3000),
+- port backend (default 3005),
 - path database absolut ke `data/gym.db` v2,
 - secret acak dari `openssl rand -hex 32`,
 - username admin,
@@ -121,7 +121,7 @@ Atau salin isi `deploy/nginx.conf.snippet` ke dalam server block v2. Snippet
 sudah mengatur:
 
 - `root` ke `web/dist`,
-- proxy `/api/` ke `127.0.0.1:3000`,
+- proxy `/api/` ke `127.0.0.1:3005`,
 - cache aset,
 - SPA fallback `try_files $uri $uri/ /index.html` supaya refresh
   `/clients/:id` tidak 404.
