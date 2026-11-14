@@ -39,6 +39,12 @@ Thumbs.db
 .vscode/
 *.swp
 
+# SQLite data
+*.db
+*.db-journal
+*.sqlite
+data/
+
 # Backups
 *.bak
 *.backup
