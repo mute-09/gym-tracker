@@ -43,6 +43,63 @@ export interface PlanDayOption {
   urutan: number;
 }
 
+export interface PlanSummary {
+  id: number;
+  clientId: number;
+  nama: string;
+  createdAt: string;
+  updatedAt: string;
+  dayCount: number;
+}
+
+export interface PlanExercise {
+  id: number;
+  planDayId: number;
+  namaExercise: string;
+  setTarget: number | null;
+  repTarget: string | null;
+  urutan: number;
+}
+
+export interface PlanDay {
+  id: number;
+  planId: number;
+  weekNumber: number | null;
+  label: string;
+  urutan: number;
+  exercises: PlanExercise[];
+}
+
+export interface Plan {
+  id: number;
+  clientId: number;
+  nama: string;
+  createdAt: string;
+  updatedAt: string;
+  days: PlanDay[];
+}
+
+export type PlanDayBase = Omit<PlanDay, 'exercises'>;
+
+export type PlanHeader = Omit<PlanSummary, 'dayCount'>;
+
+export interface NewPlan {
+  nama: string;
+}
+
+export interface NewPlanDay {
+  weekNumber: number | null;
+  label: string;
+  urutan?: number;
+}
+
+export interface NewPlanExercise {
+  namaExercise: string;
+  setTarget: number | null;
+  repTarget: string | null;
+  urutan?: number;
+}
+
 export interface TopSet {
   berat: number | null;
   reps: number | null;
@@ -173,6 +230,56 @@ export const api = {
   muscleGroups: () => request<MuscleGroup[]>('/api/muscle-groups'),
 
   clientPlanDays: (id: number) => request<PlanDayOption[]>(`/api/clients/${id}/plan-days`),
+
+  listPlans: (clientId: number) =>
+    request<PlanSummary[]>(`/api/clients/${clientId}/plans`),
+
+  plan: (id: number) => request<Plan>(`/api/plans/${id}`),
+
+  createPlan: (clientId: number, payload: NewPlan) =>
+    request<PlanHeader>(`/api/clients/${clientId}/plans`, {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    }),
+
+  updatePlan: (id: number, payload: Partial<NewPlan>) =>
+    request<PlanHeader>(`/api/plans/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(payload)
+    }),
+
+  deletePlan: (id: number) =>
+    request<{ ok: boolean }>(`/api/plans/${id}`, { method: 'DELETE' }),
+
+  createDay: (planId: number, payload: NewPlanDay) =>
+    request<PlanDayBase>(`/api/plans/${planId}/days`, {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    }),
+
+  updateDay: (id: number, payload: Partial<NewPlanDay>) =>
+    request<PlanDayBase>(`/api/plan-days/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(payload)
+    }),
+
+  deleteDay: (id: number) =>
+    request<{ ok: boolean }>(`/api/plan-days/${id}`, { method: 'DELETE' }),
+
+  createExercise: (dayId: number, payload: NewPlanExercise) =>
+    request<PlanExercise>(`/api/plan-days/${dayId}/exercises`, {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    }),
+
+  updateExercise: (id: number, payload: Partial<NewPlanExercise>) =>
+    request<PlanExercise>(`/api/plan-day-exercises/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(payload)
+    }),
+
+  deleteExercise: (id: number) =>
+    request<{ ok: boolean }>(`/api/plan-day-exercises/${id}`, { method: 'DELETE' }),
 
   lastSummary: (id: number) => request<LastSummary>(`/api/clients/${id}/last-summary`),
 

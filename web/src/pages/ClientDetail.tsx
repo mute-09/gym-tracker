@@ -1,5 +1,6 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { Link, useParams } from 'react-router-dom';
+import PlanEditor from '../components/PlanEditor';
 import SessionForm from '../components/SessionForm';
 import {
   api,
@@ -12,7 +13,7 @@ import {
 } from '../lib/api';
 import { daysLabel, daysSince, formatDate, formatNumber, weightLabel } from '../lib/format';
 
-type Tab = 'ringkasan' | 'sesi' | 'profil';
+type Tab = 'ringkasan' | 'sesi' | 'plan' | 'profil';
 
 function topSetLabel(topSet: { berat: number | null; reps: number | null } | null) {
   if (!topSet) return '-';
@@ -191,6 +192,7 @@ export default function ClientDetail() {
   const [tab, setTab] = useState<Tab>('ringkasan');
   const [version, setVersion] = useState(0);
   const [clientVersion, setClientVersion] = useState(0);
+  const [planOptionsVersion, setPlanOptionsVersion] = useState(0);
 
   const [client, setClient] = useState<Client | null>(null);
   const [clientError, setClientError] = useState<string | null>(null);
@@ -237,7 +239,7 @@ export default function ClientDetail() {
     return () => {
       cancelled = true;
     };
-  }, [clientId, validId, clientVersion]);
+  }, [clientId, validId, clientVersion, planOptionsVersion]);
 
   useEffect(() => {
     if (!validId) return;
@@ -374,6 +376,15 @@ export default function ClientDetail() {
           onClick={() => setTab('sesi')}
         >
           Sesi
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={tab === 'plan'}
+          className={tab === 'plan' ? 'tab active' : 'tab'}
+          onClick={() => setTab('plan')}
+        >
+          Plan
         </button>
         <button
           type="button"
@@ -544,6 +555,13 @@ export default function ClientDetail() {
               </article>
             ))}
         </div>
+      </div>
+
+      <div hidden={tab !== 'plan'}>
+        <PlanEditor
+          clientId={clientId}
+          onPlanDaysChanged={() => setPlanOptionsVersion((current) => current + 1)}
+        />
       </div>
 
       <div hidden={tab !== 'profil'}>
