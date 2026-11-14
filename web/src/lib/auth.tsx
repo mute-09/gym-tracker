@@ -15,6 +15,7 @@ interface AuthValue {
   status: AuthStatus;
   trainer: Trainer | null;
   notice: string | null;
+  showNotice: (message: string) => void;
   clearNotice: () => void;
   login: (username: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
@@ -82,11 +83,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setStatus('anonymous');
   }, []);
 
+  const showNotice = useCallback((message: string) => setNotice(message), []);
   const clearNotice = useCallback(() => setNotice(null), []);
 
   const value = useMemo<AuthValue>(
-    () => ({ status, trainer, notice, clearNotice, login, logout }),
-    [status, trainer, notice, clearNotice, login, logout]
+    () => ({ status, trainer, notice, showNotice, clearNotice, login, logout }),
+    [status, trainer, notice, showNotice, clearNotice, login, logout]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

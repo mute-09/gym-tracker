@@ -14,6 +14,22 @@ export interface Trainer {
   isAdmin: boolean;
 }
 
+export interface TrainerAccount extends Trainer {
+  aktif: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface NewTrainer {
+  username: string;
+  password: string;
+}
+
+export interface TrainerPatch {
+  aktif?: boolean;
+  password?: string;
+}
+
 export interface MeResponse {
   trainer: Trainer;
 }
@@ -300,5 +316,19 @@ export const api = {
     }),
 
   deleteSession: (id: number) =>
-    request<{ ok: boolean }>(`/api/sessions/${id}`, { method: 'DELETE' })
+    request<{ ok: boolean }>(`/api/sessions/${id}`, { method: 'DELETE' }),
+
+  listTrainers: () => request<TrainerAccount[]>('/api/trainers'),
+
+  createTrainer: (payload: NewTrainer) =>
+    request<TrainerAccount>('/api/trainers', {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    }),
+
+  updateTrainer: (id: number, payload: TrainerPatch) =>
+    request<TrainerAccount>(`/api/trainers/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(payload)
+    })
 };

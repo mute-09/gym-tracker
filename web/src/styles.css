@@ -462,6 +462,61 @@ tbody tr:last-child td {
   font-size: 0.9rem;
 }
 
+.form-warning {
+  color: #93370d;
+  background: #fffaeb;
+  border: 1px solid #fedf89;
+  border-radius: 8px;
+  padding: 0.5rem 0.7rem;
+  font-size: 0.9rem;
+}
+
+.badge {
+  display: inline-block;
+  padding: 0.15rem 0.55rem;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+.badge-admin {
+  color: #1758bb;
+  background: #eaf1fe;
+  border-color: #b6d0fb;
+}
+
+.badge-neutral {
+  color: var(--muted);
+  background: #f2f4f7;
+  border-color: var(--border);
+}
+
+.badge-success {
+  color: #05603a;
+  background: #ecfdf3;
+  border-color: #abefc6;
+}
+
+.badge-danger {
+  color: var(--danger);
+  background: #fef3f2;
+  border-color: #fecdca;
+}
+
+.table-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.table-actions button {
+  padding: 0.35rem 0.65rem;
+  font-size: 0.85rem;
+}
+
 .summary-head {
   display: flex;
   justify-content: space-between;

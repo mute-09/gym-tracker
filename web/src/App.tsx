@@ -1,5 +1,7 @@
+import { useEffect, useState } from 'react';
 import { Link, Navigate, Outlet, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from './lib/auth';
+import AdminTrainers from './pages/AdminTrainers';
 import ClientDetail from './pages/ClientDetail';
 import ClientList from './pages/ClientList';
 import Login from './pages/Login';
@@ -34,9 +36,27 @@ function Header() {
   );
 }
 
+function AdminDenied() {
+  const { showNotice } = useAuth();
+  const [redirect, setRedirect] = useState(false);
+
+  useEffect(() => {
+    showNotice('Akses ditolak');
+    setRedirect(true);
+  }, [showNotice]);
+
+  if (redirect) {
+    return <Navigate to="/" replace />;
+  }
+
+  return <div className="center-screen">Memeriksa akses…</div>;
+}
+
 function ProtectedLayout() {
-  const { status } = useAuth();
+  const { status, trainer } = useAuth();
   const location = useLocation();
+  const isAdminArea =
+    location.pathname === '/admin' || location.pathname.startsWith('/admin/');
 
   if (status === 'loading') {
     return <div className="center-screen">Memuat…</div>;
@@ -50,6 +70,10 @@ function ProtectedLayout() {
         state={{ from: `${location.pathname}${location.search}` }}
       />
     );
+  }
+
+  if (isAdminArea && trainer && !trainer.isAdmin) {
+    return <AdminDenied />;
   }
 
   return (
@@ -85,6 +109,7 @@ export default function App() {
         <Route element={<ProtectedLayout />}>
           <Route path="/" element={<ClientList />} />
           <Route path="/clients/:id" element={<ClientDetail />} />
+          <Route path="/admin/trainers" element={<AdminTrainers />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
