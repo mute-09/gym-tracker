@@ -1,6 +1,7 @@
 import { serve } from '@hono/node-server';
 import { Hono } from 'hono';
 import { login, logout, me, requireAuth } from './auth.js';
+import clients from './clients.js';
 
 const app = new Hono();
 
@@ -18,6 +19,7 @@ app.get('/api/health', (c) => c.json({ ok: true }));
 app.post('/api/auth/login', login);
 app.post('/api/auth/logout', logout);
 app.get('/api/me', me);
+app.route('/api/clients', clients);
 
 const port = Number(process.env.PORT || 3000);
 const hostname = process.env.HOST || '127.0.0.1';
