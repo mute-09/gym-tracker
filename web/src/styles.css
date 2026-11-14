@@ -1,0 +1,281 @@
+:root {
+  --bg: #f4f5f7;
+  --surface: #ffffff;
+  --border: #dfe2e8;
+  --text: #1c2430;
+  --muted: #68717f;
+  --accent: #1f6feb;
+  --accent-dark: #1758bb;
+  --danger: #b42318;
+  --radius: 10px;
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  color: var(--text);
+  background: var(--bg);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--bg);
+}
+
+h1,
+h2 {
+  margin: 0 0 0.35rem;
+  line-height: 1.2;
+}
+
+h1 {
+  font-size: 1.5rem;
+}
+
+h2 {
+  font-size: 1.1rem;
+}
+
+p {
+  margin: 0.25rem 0;
+}
+
+a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+button {
+  font: inherit;
+  border: 1px solid var(--accent);
+  background: var(--accent);
+  color: #fff;
+  padding: 0.5rem 0.9rem;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+button:hover:not(:disabled) {
+  background: var(--accent-dark);
+}
+
+button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+button.secondary {
+  background: transparent;
+  color: var(--text);
+  border-color: var(--border);
+}
+
+button.secondary:hover:not(:disabled) {
+  background: #eef0f4;
+}
+
+input {
+  font: inherit;
+  width: 100%;
+  padding: 0.55rem 0.7rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--text);
+}
+
+input:focus {
+  outline: 2px solid color-mix(in srgb, var(--accent) 35%, transparent);
+  border-color: var(--accent);
+}
+
+.muted {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.center-screen {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 1.5rem;
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: 0 1px 2px rgb(16 24 40 / 6%);
+}
+
+.login-card {
+  width: min(380px, 100%);
+  padding: 1.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.login-card label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.form-error {
+  color: var(--danger);
+  background: #fef3f2;
+  border: 1px solid #fecdca;
+  border-radius: 8px;
+  padding: 0.5rem 0.7rem;
+  font-size: 0.9rem;
+}
+
+.app-header {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.header-inner {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 0.75rem 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.brand {
+  font-weight: 700;
+  color: var(--text);
+}
+
+.header-nav {
+  display: flex;
+  gap: 1rem;
+}
+
+.header-nav a {
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.header-nav a:hover {
+  color: var(--text);
+  text-decoration: none;
+}
+
+.header-user {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.app-main {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 1.5rem 1.25rem 3rem;
+}
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.page-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.table-wrap {
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+
+th,
+td {
+  text-align: left;
+  padding: 0.7rem 0.9rem;
+  border-bottom: 1px solid var(--border);
+}
+
+th {
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  background: #fafbfc;
+}
+
+tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.actions {
+  text-align: right;
+}
+
+.empty-state {
+  padding: 2rem;
+  text-align: center;
+}
+
+.toast {
+  position: fixed;
+  top: 1rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: #1c2430;
+  color: #fff;
+  padding: 0.65rem 1rem;
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgb(16 24 40 / 20%);
+  font-size: 0.9rem;
+}
+
+.toast-close {
+  background: transparent;
+  border: none;
+  color: #fff;
+  padding: 0 0.2rem;
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
+@media (max-width: 600px) {
+  .page-head {
+    flex-direction: column;
+  }
+
+  .header-inner {
+    flex-wrap: wrap;
+    gap: 0.5rem 1rem;
+  }
+
+  .header-user {
+    margin-left: auto;
+  }
+}
