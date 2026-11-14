@@ -29,6 +29,74 @@ export interface Client {
   daysAgo: number | null;
 }
 
+export interface MuscleGroup {
+  id: number;
+  nama: string;
+}
+
+export interface PlanDayOption {
+  id: number;
+  planId: number;
+  planNama: string;
+  weekNumber: number | null;
+  label: string;
+  urutan: number;
+}
+
+export interface TopSet {
+  berat: number | null;
+  reps: number | null;
+}
+
+export interface LastSummary {
+  session: { id: number; tanggal: string; catatan: string } | null;
+  daysAgo: number | null;
+  muscles: MuscleGroup[];
+  exercises: { namaExercise: string; topSet: TopSet | null }[];
+}
+
+export interface SessionSet {
+  id: number;
+  sessionExerciseId: number;
+  setNumber: number;
+  berat: number | null;
+  reps: number | null;
+}
+
+export interface SessionExercise {
+  id: number;
+  sessionId: number;
+  namaExercise: string;
+  urutan: number;
+  sets: SessionSet[];
+}
+
+export interface Session {
+  id: number;
+  clientId: number;
+  tanggal: string;
+  planDayId: number | null;
+  catatan: string;
+  createdAt: string;
+  updatedAt: string;
+  muscles: MuscleGroup[];
+  exercises: SessionExercise[];
+}
+
+export interface NewSession {
+  tanggal: string;
+  planDayId: number | null;
+  catatan: string;
+  muscleGroupIds: number[];
+  exercises: { namaExercise: string; sets: { berat: number; reps: number }[] }[];
+}
+
+export interface NewClient {
+  nama: string;
+  beratBadan: number | null;
+  catatan?: string;
+}
+
 type UnauthorizedHandler = () => void;
 
 let unauthorizedHandler: UnauthorizedHandler | null = null;
@@ -89,5 +157,24 @@ export const api = {
 
   logout: () => request<{ ok: boolean }>('/api/auth/logout', { method: 'POST' }, { silent: true }),
 
-  clients: () => request<Client[]>('/api/clients')
+  clients: () => request<Client[]>('/api/clients'),
+
+  client: (id: number) => request<Client>(`/api/clients/${id}`),
+
+  createClient: (payload: NewClient) =>
+    request<Client>('/api/clients', { method: 'POST', body: JSON.stringify(payload) }),
+
+  muscleGroups: () => request<MuscleGroup[]>('/api/muscle-groups'),
+
+  clientPlanDays: (id: number) => request<PlanDayOption[]>(`/api/clients/${id}/plan-days`),
+
+  lastSummary: (id: number) => request<LastSummary>(`/api/clients/${id}/last-summary`),
+
+  sessions: (id: number) => request<Session[]>(`/api/clients/${id}/sessions`),
+
+  createSession: (id: number, payload: NewSession) =>
+    request<Session>(`/api/clients/${id}/sessions`, {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    })
 };

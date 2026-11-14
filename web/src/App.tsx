@@ -1,5 +1,6 @@
 import { Link, Navigate, Outlet, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from './lib/auth';
+import ClientDetail from './pages/ClientDetail';
 import ClientList from './pages/ClientList';
 import Login from './pages/Login';
 
@@ -83,6 +84,7 @@ export default function App() {
         <Route path="/login" element={<Login />} />
         <Route element={<ProtectedLayout />}>
           <Route path="/" element={<ClientList />} />
+          <Route path="/clients/:id" element={<ClientDetail />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

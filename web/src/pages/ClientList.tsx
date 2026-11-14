@@ -1,41 +1,147 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState, type FormEvent } from 'react';
+import { Link } from 'react-router-dom';
 import { api, ApiError, type Client } from '../lib/api';
+import { daysLabel, weightLabel } from '../lib/format';
 
-function sessionLabel(client: Client) {
-  if (client.daysAgo === null) {
-    return 'Belum ada sesi';
+interface AddClientModalProps {
+  onClose: () => void;
+  onCreated: () => void;
+}
+
+function AddClientModal({ onClose, onCreated }: AddClientModalProps) {
+  const [nama, setNama] = useState('');
+  const [berat, setBerat] = useState('');
+  const [catatan, setCatatan] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setError(null);
+
+    const trimmedNama = nama.trim();
+    if (!trimmedNama) {
+      setError('Nama wajib diisi.');
+      return;
+    }
+
+    let beratBadan: number | null = null;
+    if (berat.trim() !== '') {
+      beratBadan = Number(berat.replace(',', '.'));
+      if (!Number.isFinite(beratBadan) || beratBadan <= 0) {
+        setError('Berat harus angka lebih dari 0, atau kosongkan.');
+        return;
+      }
+    }
+
+    setSubmitting(true);
+    try {
+      await api.createClient({
+        nama: trimmedNama,
+        beratBadan,
+        catatan: catatan.trim()
+      });
+      onCreated();
+      onClose();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Gagal menambah klien');
+    } finally {
+      setSubmitting(false);
+    }
   }
-  if (client.daysAgo === 0) {
-    return 'Hari ini';
-  }
-  if (client.daysAgo === 1) {
-    return '1 hari lalu';
-  }
-  return `${client.daysAgo} hari lalu`;
+
+  return (
+    <div
+      className="modal-overlay"
+      onMouseDown={(event) => {
+        if (event.target === event.currentTarget) onClose();
+      }}
+    >
+      <div
+        className="card modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="add-client-title"
+      >
+        <div className="modal-head">
+          <h2 id="add-client-title">Tambah klien</h2>
+          <button type="button" className="secondary icon-button" onClick={onClose} aria-label="Tutup">
+            ×
+          </button>
+        </div>
+
+        <form className="stack-form" onSubmit={handleSubmit}>
+          <label>
+            Nama *
+            <input
+              type="text"
+              value={nama}
+              onChange={(event) => setNama(event.target.value)}
+              autoFocus
+              required
+            />
+          </label>
+
+          <label>
+            Berat badan (kg)
+            <input
+              type="text"
+              inputMode="decimal"
+              value={berat}
+              onChange={(event) => setBerat(event.target.value)}
+              placeholder="Opsional"
+            />
+          </label>
+
+          <label>
+            Catatan
+            <textarea
+              rows={3}
+              value={catatan}
+              onChange={(event) => setCatatan(event.target.value)}
+              placeholder="Opsional"
+            />
+          </label>
+
+          {error && (
+            <p className="form-error" role="alert">
+              {error}
+            </p>
+          )}
+
+          <div className="form-actions">
+            <button type="button" className="secondary" onClick={onClose} disabled={submitting}>
+              Batal
+            </button>
+            <button type="submit" disabled={submitting}>
+              {submitting ? 'Menyimpan…' : 'Simpan'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
 }
 
 export default function ClientList() {
   const [clients, setClients] = useState<Client[] | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [showAdd, setShowAdd] = useState(false);
+
+  const loadClients = useCallback(async () => {
+    try {
+      const data = await api.clients();
+      setClients(data);
+      setError(null);
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 401) return;
+      setError(err instanceof Error ? err.message : 'Gagal memuat klien');
+    }
+  }, []);
 
   useEffect(() => {
-    let cancelled = false;
-
-    api
-      .clients()
-      .then((data) => {
-        if (!cancelled) setClients(data);
-      })
-      .catch((err: unknown) => {
-        if (cancelled) return;
-        if (err instanceof ApiError && err.status === 401) return;
-        setError(err instanceof Error ? err.message : 'Gagal memuat klien');
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+    void loadClients();
+  }, [loadClients]);
 
   return (
     <section className="page">
@@ -44,19 +150,23 @@ export default function ClientList() {
           <h1>Klien</h1>
           <p className="muted">Semua trainer dapat melihat dan mengedit semua klien.</p>
         </div>
-        <button type="button" disabled title="Form tambah klien menyusul di M8">
+        <button type="button" onClick={() => setShowAdd(true)}>
           Tambah klien
         </button>
       </div>
 
-      {error && <p className="form-error" role="alert">{error}</p>}
+      {error && (
+        <p className="form-error" role="alert">
+          {error}
+        </p>
+      )}
 
       {clients === null && !error && <p className="muted">Memuat klien…</p>}
 
       {clients !== null && clients.length === 0 && (
         <div className="card empty-state">
           <h2>Belum ada klien</h2>
-          <p className="muted">Klien pertama akan tampil di sini setelah ditambahkan.</p>
+          <p className="muted">Klik “Tambah klien” untuk memulai.</p>
         </div>
       )}
 
@@ -75,18 +185,27 @@ export default function ClientList() {
               {clients.map((client) => (
                 <tr key={client.id}>
                   <td>{client.nama}</td>
-                  <td>{client.beratBadan === null ? '—' : `${client.beratBadan} kg`}</td>
-                  <td>{sessionLabel(client)}</td>
+                  <td>{weightLabel(client.beratBadan)}</td>
+                  <td>{daysLabel(client.daysAgo)}</td>
                   <td className="actions">
-                    <button type="button" disabled title="Detail klien tersedia di M8">
+                    <Link className="button-link" to={`/clients/${client.id}`}>
                       Buka
-                    </button>
+                    </Link>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
+      )}
+
+      {showAdd && (
+        <AddClientModal
+          onClose={() => setShowAdd(false)}
+          onCreated={() => {
+            void loadClients();
+          }}
+        />
       )}
     </section>
   );

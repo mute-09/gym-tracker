@@ -111,6 +111,34 @@ plans.get('/clients/:id/plans', (c) => {
   return c.json(rows.map((row) => ({ ...planJson(row), dayCount: row.day_count })));
 });
 
+plans.get('/clients/:id/plan-days', (c) => {
+  const clientId = parseId(c.req.param('id'));
+  if (!clientId || !findClient(clientId)) {
+    return c.json({ error: 'not found' }, 404);
+  }
+
+  const rows = db
+    .prepare(
+      `SELECT pd.id, pd.plan_id, p.nama AS plan_nama, pd.week_number, pd.label, pd.urutan
+       FROM plan_days pd
+       JOIN plans p ON p.id = pd.plan_id
+       WHERE p.client_id = ? AND p.arsip = 0
+       ORDER BY p.nama COLLATE NOCASE, pd.urutan ASC, pd.id ASC`
+    )
+    .all(clientId);
+
+  return c.json(
+    rows.map((row) => ({
+      id: row.id,
+      planId: row.plan_id,
+      planNama: row.plan_nama,
+      weekNumber: row.week_number,
+      label: row.label,
+      urutan: row.urutan
+    }))
+  );
+});
+
 plans.post('/clients/:id/plans', async (c) => {
   const clientId = parseId(c.req.param('id'));
   if (!clientId || !findClient(clientId)) {
