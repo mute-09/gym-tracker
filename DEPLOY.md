@@ -109,6 +109,15 @@ lalu `sudo systemctl daemon-reload && sudo systemctl restart gym-api`.
 
 Buat **server block baru** untuk v2. Jangan ubah server block v1.
 
+Salin build ke direktori yang bisa dibaca `www-data` (home `muthi` biasanya
+`700`, sehingga nginx tidak bisa traverse `/home/muthi`):
+
+```bash
+sudo install -d -m 755 -o root -g root /var/www/gym2
+sudo rsync -a --delete --chown=root:root --chmod=D755,F644 \
+  /home/muthi/gym-assitant-v2/web/dist/ /var/www/gym2/
+```
+
 Contoh kerangka (sesuaikan port/TLS dengan setup v2):
 
 ```nginx
@@ -122,7 +131,7 @@ server {
 Atau salin isi `deploy/nginx.conf.snippet` ke dalam server block v2. Snippet
 sudah mengatur:
 
-- `root` ke `web/dist`,
+- `root` ke `/var/www/gym2` (salinan `web/dist`),
 - proxy `/api/` ke `127.0.0.1:3005`,
 - cache aset,
 - SPA fallback `try_files $uri $uri/ /index.html` supaya refresh

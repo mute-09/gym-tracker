@@ -122,8 +122,9 @@ Frontend hanya merender response; tidak ada perhitungan di klien.
   - listen `127.0.0.1:3005` (`PORT` di `.env`)
 - Database SQLite persisten di
   `/home/muthi/gym-assitant-v2/data/gym.db` melalui `DB_PATH` absolut.
-- Frontend statis `web/dist/` disajikan nginx v2; `/api/` di-proxy ke
-  `127.0.0.1:3005` dengan same-origin (tanpa CORS longgar).
+- Frontend statis `web/dist/` disalin ke `/var/www/gym2` milik root (karena
+  home `muthi` mode 700 tidak bisa ditraverse `www-data`) lalu disajikan nginx
+  v2; `/api/` di-proxy ke `127.0.0.1:3005` dengan same-origin (tanpa CORS).
 - SPA fallback (`try_files $uri $uri/ /index.html`) wajib agar refresh route
   seperti `/clients/:id` tidak 404.
 - Cloudflare Tunnel v2 menerminasi TLS dan meneruskan ke nginx v2; cookie

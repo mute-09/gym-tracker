@@ -49,7 +49,8 @@ Panduan produksi lengkap ada di [DEPLOY.md](DEPLOY.md). Ringkasnya:
   dan tidak disentuh; `/home/muthi/gym-assitan` (file) juga tidak disentuh.
 - v2 dipasang di `/home/muthi/gym-assitant-v2/`.
 - Backend via systemd `gym-api`, listen `127.0.0.1:3005`.
-- Frontend statis `web/dist/` disajikan nginx, `/api/` di-proxy ke backend.
+- Frontend statis `web/dist/` disalin ke `/var/www/gym2` dan disajikan nginx;
+  `/api/` di-proxy ke backend.
 - Akses publik lewat Cloudflare Tunnel.
 
 Artefak deploy ada di `deploy/`:

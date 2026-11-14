@@ -31,7 +31,8 @@ Langkah manual di server:
    set -a; . ../.env; set +a; npm run seed
 4. Pasang deploy/gym-api.service, lalu:
    sudo systemctl daemon-reload && sudo systemctl enable --now gym-api
-5. Tambahkan deploy/nginx.conf.snippet ke server block v2, lalu:
+5. Salin web/dist ke /var/www/gym2 (root-owned), tambahkan
+   deploy/nginx.conf.snippet ke server block v2, lalu:
    sudo nginx -t && sudo systemctl reload nginx
 6. Verifikasi: curl -f https://<hostname-v2>/api/health
 
