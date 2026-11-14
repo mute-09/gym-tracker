@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { db } from './db.js';
 import { verifyPassword } from './lib/password.js';
-import { setCookie } from 'hono/cookie';
+import { deleteCookie, getCookie, setCookie } from 'hono/cookie';
 import { randomBytes } from 'node:crypto';
 
 const SESSION_DAYS = 7;
@@ -23,6 +23,51 @@ function cookieSecure() {
   return process.env.COOKIE_SECURE !== 'false';
 }
 
+function cookieOptions() {
+  return {
+    httpOnly: true,
+    sameSite: 'Lax',
+    secure: cookieSecure(),
+    path: '/'
+  };
+}
+
+export function requireAuth(c, next) {
+  const token = getCookie(c, COOKIE_NAME);
+  if (!token) {
+    return c.json({ error: 'unauthorized' }, 401);
+  }
+
+  const trainer = db
+    .prepare(
+      `SELECT t.id, t.username, t.is_admin
+       FROM auth_sessions s
+       JOIN trainers t ON t.id = s.trainer_id
+       WHERE s.token = ? AND s.expires_at > datetime('now') AND t.aktif = 1`
+    )
+    .get(token);
+
+  if (!trainer) {
+    return c.json({ error: 'unauthorized' }, 401);
+  }
+
+  c.set('trainer', {
+    id: trainer.id,
+    username: trainer.username,
+    isAdmin: trainer.is_admin === 1
+  });
+
+  return next();
+}
+
+export function requireAdmin(c, next) {
+  const trainer = c.get('trainer');
+  if (!trainer || !trainer.isAdmin) {
+    return c.json({ error: 'forbidden' }, 403);
+  }
+  return next();
+}
+
 export async function login(c) {
   const body = await c.req.json().catch(() => null);
   const parsed = loginSchema.safeParse(body);
@@ -42,6 +87,7 @@ export async function login(c) {
   }
 
   const token = randomBytes(32).toString('hex');
+  db.prepare('DELETE FROM auth_sessions WHERE expires_at <= datetime(\'now\')').run();
   db.prepare('INSERT INTO auth_sessions (token, trainer_id, expires_at) VALUES (?, ?, ?)').run(
     token,
     trainer.id,
@@ -49,10 +95,7 @@ export async function login(c) {
   );
 
   setCookie(c, COOKIE_NAME, token, {
-    httpOnly: true,
-    sameSite: 'Lax',
-    secure: cookieSecure(),
-    path: '/',
+    ...cookieOptions(),
     maxAge: SESSION_DAYS * 24 * 60 * 60
   });
 
@@ -61,4 +104,17 @@ export async function login(c) {
   });
 }
 
-export { COOKIE_NAME };
+export function logout(c) {
+  const token = getCookie(c, COOKIE_NAME);
+  if (token) {
+    db.prepare('DELETE FROM auth_sessions WHERE token = ?').run(token);
+  }
+  deleteCookie(c, COOKIE_NAME, cookieOptions());
+  return c.json({ ok: true });
+}
+
+export function me(c) {
+  return c.json({ trainer: c.get('trainer') });
+}
+
+export const sessionCookieName = COOKIE_NAME;

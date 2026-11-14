@@ -1,12 +1,23 @@
 import { serve } from '@hono/node-server';
 import { Hono } from 'hono';
-import { login } from './auth.js';
+import { login, logout, me, requireAuth } from './auth.js';
 
 const app = new Hono();
+
+const PUBLIC_ROUTES = new Set(['/api/health', '/api/auth/login']);
+
+app.use('/api/*', (c, next) => {
+  if (PUBLIC_ROUTES.has(c.req.path)) {
+    return next();
+  }
+  return requireAuth(c, next);
+});
 
 app.get('/api/health', (c) => c.json({ ok: true }));
 
 app.post('/api/auth/login', login);
+app.post('/api/auth/logout', logout);
+app.get('/api/me', me);
 
 const port = Number(process.env.PORT || 3000);
 const hostname = process.env.HOST || '127.0.0.1';
