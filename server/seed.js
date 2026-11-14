@@ -4,8 +4,8 @@ import { hashPassword } from './src/lib/password.js';
 const username = process.env.ADMIN_USERNAME || 'admin';
 const password = process.env.ADMIN_PASSWORD;
 
-if (!password) {
-  console.error('ADMIN_PASSWORD is required');
+if (!password || !password.trim()) {
+  console.error('ADMIN_PASSWORD is required and must not be blank');
   process.exit(1);
 }
 

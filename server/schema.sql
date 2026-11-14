@@ -45,3 +45,15 @@ INSERT OR IGNORE INTO muscle_groups(nama) VALUES ('dada'),('punggung'),('kaki'),
 CREATE INDEX IF NOT EXISTS idx_plans_client ON plans(client_id);
 CREATE INDEX IF NOT EXISTS idx_sessions_client ON sessions(client_id,tanggal DESC);
 CREATE INDEX IF NOT EXISTS idx_audit_entity ON audit_log(entity_type,entity_id);
+
+CREATE TRIGGER IF NOT EXISTS trg_trainers_updated AFTER UPDATE ON trainers
+BEGIN UPDATE trainers SET updated_at = datetime('now') WHERE id = NEW.id; END;
+
+CREATE TRIGGER IF NOT EXISTS trg_clients_updated AFTER UPDATE ON clients
+BEGIN UPDATE clients SET updated_at = datetime('now') WHERE id = NEW.id; END;
+
+CREATE TRIGGER IF NOT EXISTS trg_plans_updated AFTER UPDATE ON plans
+BEGIN UPDATE plans SET updated_at = datetime('now') WHERE id = NEW.id; END;
+
+CREATE TRIGGER IF NOT EXISTS trg_sessions_updated AFTER UPDATE ON sessions
+BEGIN UPDATE sessions SET updated_at = datetime('now') WHERE id = NEW.id; END;

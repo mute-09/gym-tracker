@@ -14,4 +14,7 @@ export const db = new Database(dbPath);
 
 db.pragma('journal_mode = WAL');
 db.pragma('foreign_keys = ON');
+if (db.pragma('foreign_keys', { simple: true }) !== 1) {
+  throw new Error('foreign_keys pragma failed to enable');
+}
 db.exec(fs.readFileSync(schemaPath, 'utf8'));

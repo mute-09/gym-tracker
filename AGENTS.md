@@ -18,6 +18,7 @@ Klien = record DB, bukan user. v1 (`legacy/`) dibuang total, tidak ada migrasi.
 7. `sessions.plan_day_id` NULLABLE. Sesi tanpa plan_day valid.
 8. B1 (last-summary) dihitung di BACKEND. Frontend render saja.
 9. Tanpa Docker, tanpa ORM. SQL langsung via better-sqlite3.
+10. `updated_at` di-maintain oleh trigger SQLite (`trg_trainers_updated`, `trg_clients_updated`, `trg_plans_updated`, `trg_sessions_updated`). Handler TIDAK set manual. `foreign_keys = ON` wajib dan di-assert saat koneksi dibuka.
 
 ## STACK
 
