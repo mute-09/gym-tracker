@@ -45,8 +45,9 @@ Hasil build ada di `web/dist/`.
 
 Panduan produksi lengkap ada di [DEPLOY.md](DEPLOY.md). Ringkasnya:
 
-- v1 tetap di `/home/muthi/gym-assitan/` dan tidak disentuh.
-- v2 dipasang di `/home/muthi/gym-assitan-v2/`.
+- v1 tetap di `/home/muthi/gym-assitant/` (container `gym-tracker` port 8088)
+  dan tidak disentuh; `/home/muthi/gym-assitan` (file) juga tidak disentuh.
+- v2 dipasang di `/home/muthi/gym-assitant-v2/`.
 - Backend via systemd `gym-api`, listen `127.0.0.1:3005`.
 - Frontend statis `web/dist/` disajikan nginx, `/api/` di-proxy ke backend.
 - Akses publik lewat Cloudflare Tunnel.

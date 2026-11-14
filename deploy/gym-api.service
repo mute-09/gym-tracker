@@ -6,9 +6,9 @@ After=network.target
 Type=simple
 User=muthi
 Group=muthi
-WorkingDirectory=/home/muthi/gym-assitan-v2/server
-EnvironmentFile=/home/muthi/gym-assitan-v2/.env
-ExecStart=/usr/bin/node src/index.js
+WorkingDirectory=/home/muthi/gym-assitant-v2/server
+EnvironmentFile=/home/muthi/gym-assitant-v2/.env
+ExecStart=/usr/local/bin/node src/index.js
 Restart=always
 RestartSec=3
 
@@ -16,7 +16,7 @@ RestartSec=3
 NoNewPrivileges=true
 PrivateTmp=true
 ProtectSystem=strict
-ReadWritePaths=/home/muthi/gym-assitan-v2
+ReadWritePaths=/home/muthi/gym-assitant-v2
 
 [Install]
 WantedBy=multi-user.target

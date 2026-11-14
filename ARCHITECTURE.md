@@ -110,17 +110,18 @@ Frontend hanya merender response; tidak ada perhitungan di klien.
 
 ## Deployment
 
-- **v1** tetap di `/home/muthi/gym-assitan/` (nginx + Cloudflare Tunnel lama)
-  dan tidak disentuh oleh v2.
-- **v2** dipasang di `/home/muthi/gym-assitan-v2/` dengan hostname terpisah.
+- **v1** tetap di `/home/muthi/gym-assitant/` (container `gym-tracker` port
+  8088) dan tidak disentuh oleh v2; `/home/muthi/gym-assitan` adalah file biasa
+  yang juga tidak disentuh.
+- **v2** dipasang di `/home/muthi/gym-assitant-v2/` dengan hostname terpisah.
 - Backend systemd `deploy/gym-api.service`:
   - `User=muthi`
-  - `WorkingDirectory=/home/muthi/gym-assitan-v2/server`
-  - `ExecStart=/usr/bin/node src/index.js`
-  - `EnvironmentFile=/home/muthi/gym-assitan-v2/.env`
+  - `WorkingDirectory=/home/muthi/gym-assitant-v2/server`
+  - `ExecStart=/usr/local/bin/node src/index.js`
+  - `EnvironmentFile=/home/muthi/gym-assitant-v2/.env`
   - listen `127.0.0.1:3005` (`PORT` di `.env`)
 - Database SQLite persisten di
-  `/home/muthi/gym-assitan-v2/data/gym.db` melalui `DB_PATH` absolut.
+  `/home/muthi/gym-assitant-v2/data/gym.db` melalui `DB_PATH` absolut.
 - Frontend statis `web/dist/` disajikan nginx v2; `/api/` di-proxy ke
   `127.0.0.1:3005` dengan same-origin (tanpa CORS longgar).
 - SPA fallback (`try_files $uri $uri/ /index.html`) wajib agar refresh route

@@ -24,8 +24,8 @@ cat <<'EOF'
 Build selesai. Script ini TIDAK melakukan SSH, rsync, atau deploy otomatis.
 
 Langkah manual di server:
-1. Salin repo/build ke /home/muthi/gym-assitan-v2 (jangan menimpa v1).
-2. Siapkan /home/muthi/gym-assitan-v2/.env dari deploy/.env.production.example,
+1. Salin repo/build ke /home/muthi/gym-assitant-v2 (jangan menimpa v1).
+2. Siapkan /home/muthi/gym-assitant-v2/.env dari deploy/.env.production.example,
    isi nilainya, lalu: chmod 600 .env
 3. Seed admin dari folder server dengan env dimuat:
    set -a; . ../.env; set +a; npm run seed

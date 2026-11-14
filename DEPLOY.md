@@ -1,7 +1,9 @@
 # Deploy Gym Tracker v2
 
 Panduan ini untuk memasang **v2 di path baru** tanpa menyentuh v1.
-v1 tetap di `/home/muthi/gym-assitan/`. v2 memakai `/home/muthi/gym-assitan-v2/`.
+v1 tetap di `/home/muthi/gym-assitant/` (container `gym-tracker` port 8088).
+`/home/muthi/gym-assitan` (tanpa `t`) adalah file biasa dan tidak disentuh.
+v2 memakai `/home/muthi/gym-assitant-v2/`.
 
 > Agent tidak menjalankan langkah di server. Semua perintah di bawah dijalankan
 > manual oleh user. Jangan menimpa folder/konfigurasi v1.
@@ -18,14 +20,14 @@ v1 tetap di `/home/muthi/gym-assitan/`. v2 memakai `/home/muthi/gym-assitan-v2/`
 ## 1. Salin repo ke path v2
 
 ```bash
-sudo mkdir -p /home/muthi/gym-assitan-v2
-sudo chown muthi:muthi /home/muthi/gym-assitan-v2
+sudo mkdir -p /home/muthi/gym-assitant-v2
+sudo chown muthi:muthi /home/muthi/gym-assitant-v2
 
 # pilih salah satu:
-git clone <repo-url> /home/muthi/gym-assitan-v2
+git clone <repo-url> /home/muthi/gym-assitant-v2
 # atau dari mesin dev:
 # rsync -av --exclude node_modules --exclude data --exclude web/dist \
-#   /path/ke/gym-asistant/ /home/muthi/gym-assitan-v2/
+#   /path/ke/gym-asistant/ /home/muthi/gym-assitant-v2/
 ```
 
 Pastikan folder v1 tidak berubah.
@@ -33,14 +35,14 @@ Pastikan folder v1 tidak berubah.
 ## 2. Install dependency backend
 
 ```bash
-cd /home/muthi/gym-assitan-v2/server
+cd /home/muthi/gym-assitant-v2/server
 npm ci --omit=dev
 ```
 
 ## 3. Siapkan environment
 
 ```bash
-cd /home/muthi/gym-assitan-v2
+cd /home/muthi/gym-assitant-v2
 cp deploy/.env.production.example .env
 chmod 600 .env
 nano .env
@@ -61,7 +63,7 @@ Jangan commit `.env`. File ini sudah di-ignore.
 `npm run seed` tidak membaca `.env` otomatis, jadi muat dulu ke shell:
 
 ```bash
-cd /home/muthi/gym-assitan-v2/server
+cd /home/muthi/gym-assitant-v2/server
 set -a
 . ../.env
 set +a
@@ -74,18 +76,18 @@ password admin yang sudah ada.
 ## 5. Build frontend
 
 ```bash
-cd /home/muthi/gym-assitan-v2/web
+cd /home/muthi/gym-assitant-v2/web
 npm ci
 npm run build
 ```
 
-Hasil build harus ada di `/home/muthi/gym-assitan-v2/web/dist/index.html`
+Hasil build harus ada di `/home/muthi/gym-assitant-v2/web/dist/index.html`
 dan `web/dist/assets/`.
 
 ## 6. Pasang systemd service
 
 ```bash
-cd /home/muthi/gym-assitan-v2
+cd /home/muthi/gym-assitant-v2
 sudo cp deploy/gym-api.service /etc/systemd/system/gym-api.service
 sudo systemctl daemon-reload
 sudo systemctl enable --now gym-api
@@ -94,8 +96,8 @@ systemctl status gym-api --no-pager
 journalctl -u gym-api -n 50 --no-pager
 ```
 
-Jika Node tidak ada di `/usr/bin/node` (misalnya memakai nvm), edit
-`ExecStart` di `/etc/systemd/system/gym-api.service` memakai hasil:
+Unit memakai `/usr/local/bin/node` (Node v24.22.1 di server). Jika lokasinya
+berbeda, edit `ExecStart` di `/etc/systemd/system/gym-api.service` memakai hasil:
 
 ```bash
 command -v node
@@ -113,7 +115,7 @@ Contoh kerangka (sesuaikan port/TLS dengan setup v2):
 server {
     listen <port-nginx-v2>;
     server_name <hostname-v2>;
-    include /home/muthi/gym-assitan-v2/deploy/nginx.conf.snippet;
+    include /home/muthi/gym-assitant-v2/deploy/nginx.conf.snippet;
 }
 ```
 
@@ -168,7 +170,7 @@ sudo nginx -t && sudo systemctl reload nginx
 
 Opsional: `sudo systemctl disable gym-api`.
 
-Data v2 tetap ada di `/home/muthi/gym-assitan-v2/data/`.
+Data v2 tetap ada di `/home/muthi/gym-assitant-v2/data/`.
 
 ## 11. Backup harian
 
@@ -179,15 +181,15 @@ crontab -e
 ```
 
 ```cron
-0 3 * * * cp /home/muthi/gym-assitan-v2/data/gym.db /home/muthi/gym-assitan-v2/data/gym.db.bak-$(date +\%F)
+0 3 * * * cp /home/muthi/gym-assitant-v2/data/gym.db /home/muthi/gym-assitant-v2/data/gym.db.bak-$(date +\%F)
 ```
 
 Database memakai WAL. Untuk backup yang konsisten saat service berjalan,
 lebih baik gunakan `sqlite3`:
 
 ```bash
-sqlite3 /home/muthi/gym-assitan-v2/data/gym.db \
-  ".backup '/home/muthi/gym-assitan-v2/data/gym.db.bak-$(date +%F)'"
+sqlite3 /home/muthi/gym-assitant-v2/data/gym.db \
+  ".backup '/home/muthi/gym-assitant-v2/data/gym.db.bak-$(date +%F)'"
 ```
 
 ## Bantuan `deploy.sh`
