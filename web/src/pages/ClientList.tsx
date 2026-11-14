@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { api, ApiError, type Client } from '../lib/api';
-import { daysLabel, weightLabel } from '../lib/format';
+import { daysLabel, daysSince, weightLabel } from '../lib/format';
 
 interface AddClientModalProps {
   onClose: () => void;
@@ -186,7 +186,7 @@ export default function ClientList() {
                 <tr key={client.id}>
                   <td>{client.nama}</td>
                   <td>{weightLabel(client.beratBadan)}</td>
-                  <td>{daysLabel(client.daysAgo)}</td>
+                  <td>{daysLabel(client.lastSessionDate ? daysSince(client.lastSessionDate) : null)}</td>
                   <td className="actions">
                     <Link className="button-link" to={`/clients/${client.id}`}>
                       Buka

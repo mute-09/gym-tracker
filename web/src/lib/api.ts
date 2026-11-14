@@ -164,6 +164,12 @@ export const api = {
   createClient: (payload: NewClient) =>
     request<Client>('/api/clients', { method: 'POST', body: JSON.stringify(payload) }),
 
+  updateClient: (id: number, payload: NewClient) =>
+    request<Client>(`/api/clients/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(payload)
+    }),
+
   muscleGroups: () => request<MuscleGroup[]>('/api/muscle-groups'),
 
   clientPlanDays: (id: number) => request<PlanDayOption[]>(`/api/clients/${id}/plan-days`),
@@ -172,9 +178,20 @@ export const api = {
 
   sessions: (id: number) => request<Session[]>(`/api/clients/${id}/sessions`),
 
+  session: (id: number) => request<Session>(`/api/sessions/${id}`),
+
   createSession: (id: number, payload: NewSession) =>
     request<Session>(`/api/clients/${id}/sessions`, {
       method: 'POST',
       body: JSON.stringify(payload)
-    })
+    }),
+
+  updateSession: (id: number, payload: NewSession) =>
+    request<Session>(`/api/sessions/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(payload)
+    }),
+
+  deleteSession: (id: number) =>
+    request<{ ok: boolean }>(`/api/sessions/${id}`, { method: 'DELETE' })
 };

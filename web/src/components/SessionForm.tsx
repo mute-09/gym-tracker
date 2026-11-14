@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react';
-import { api, type MuscleGroup, type NewSession, type PlanDayOption } from '../lib/api';
+import type { MuscleGroup, NewSession, PlanDayOption, Session } from '../lib/api';
 import { todayLocal } from '../lib/format';
 
 interface SetDraft {
@@ -13,10 +13,13 @@ interface ExerciseDraft {
 }
 
 interface SessionFormProps {
-  clientId: number;
+  mode: 'create' | 'edit';
+  initial?: Session;
   muscleGroups: MuscleGroup[];
   planDays: PlanDayOption[];
-  onCreated: () => void;
+  onSubmit: (payload: NewSession) => Promise<unknown>;
+  onSaved: () => void;
+  onCancel?: () => void;
 }
 
 function emptySet(): SetDraft {
@@ -32,20 +35,42 @@ function planDayLabel(day: PlanDayOption) {
   return `${day.planNama} — ${week}${day.label}`;
 }
 
+function draftsFromSession(session?: Session): ExerciseDraft[] {
+  if (!session) return [emptyExercise()];
+  return session.exercises.map((exercise) => ({
+    namaExercise: exercise.namaExercise,
+    sets: exercise.sets.map((set) => ({
+      berat: set.berat === null ? '' : String(set.berat),
+      reps: set.reps === null ? '' : String(set.reps)
+    }))
+  }));
+}
+
 export default function SessionForm({
-  clientId,
+  mode,
+  initial,
   muscleGroups,
   planDays,
-  onCreated
+  onSubmit,
+  onSaved,
+  onCancel
 }: SessionFormProps) {
-  const [tanggal, setTanggal] = useState(todayLocal);
-  const [planDayId, setPlanDayId] = useState('');
-  const [muscleIds, setMuscleIds] = useState<number[]>([]);
-  const [exercises, setExercises] = useState<ExerciseDraft[]>([emptyExercise()]);
-  const [catatan, setCatatan] = useState('');
+  const [tanggal, setTanggal] = useState(() => initial?.tanggal ?? todayLocal());
+  const [planDayId, setPlanDayId] = useState(() =>
+    initial?.planDayId === null || initial?.planDayId === undefined ? '' : String(initial.planDayId)
+  );
+  const [muscleIds, setMuscleIds] = useState<number[]>(
+    () => initial?.muscles.map((muscle) => muscle.id) ?? []
+  );
+  const [exercises, setExercises] = useState<ExerciseDraft[]>(() =>
+    draftsFromSession(initial)
+  );
+  const [catatan, setCatatan] = useState(() => initial?.catatan ?? '');
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+
+  const missingPlanDay = planDayId !== '' && !planDays.some((day) => String(day.id) === planDayId);
 
   useEffect(() => {
     if (!success) return;
@@ -102,6 +127,14 @@ export default function SessionForm({
           : exercise
       )
     );
+  }
+
+  function resetDraft() {
+    setTanggal(todayLocal());
+    setPlanDayId('');
+    setMuscleIds([]);
+    setExercises([emptyExercise()]);
+    setCatatan('');
   }
 
   function buildPayload(): NewSession | string {
@@ -166,14 +199,12 @@ export default function SessionForm({
 
     setSubmitting(true);
     try {
-      await api.createSession(clientId, payload);
-      setTanggal(todayLocal());
-      setPlanDayId('');
-      setMuscleIds([]);
-      setExercises([emptyExercise()]);
-      setCatatan('');
-      setSuccess(true);
-      onCreated();
+      await onSubmit(payload);
+      if (mode === 'create') {
+        resetDraft();
+        setSuccess(true);
+      }
+      onSaved();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Gagal menyimpan sesi');
     } finally {
@@ -199,11 +230,16 @@ export default function SessionForm({
           <select
             value={planDayId}
             onChange={(event) => setPlanDayId(event.target.value)}
-            disabled={planDays.length === 0}
+            disabled={planDays.length === 0 && !missingPlanDay}
           >
             <option value="">
               {planDays.length === 0 ? 'Belum ada plan day' : 'Tanpa plan day'}
             </option>
+            {missingPlanDay && (
+              <option value={planDayId} disabled>
+                Plan day #{planDayId} (tidak tersedia)
+              </option>
+            )}
             {planDays.map((day) => (
               <option key={day.id} value={day.id}>
                 {planDayLabel(day)}
@@ -331,8 +367,17 @@ export default function SessionForm({
       )}
 
       <div className="form-actions">
+        {mode === 'edit' && onCancel && (
+          <button type="button" className="secondary" onClick={onCancel} disabled={submitting}>
+            Batal
+          </button>
+        )}
         <button type="submit" disabled={submitting}>
-          {submitting ? 'Menyimpan…' : 'Simpan sesi'}
+          {submitting
+            ? 'Menyimpan…'
+            : mode === 'edit'
+              ? 'Simpan perubahan'
+              : 'Simpan sesi'}
         </button>
       </div>
     </form>

@@ -23,6 +23,17 @@ export function daysLabel(daysAgo: number | null): string {
   return `${daysAgo} hari lalu`;
 }
 
+export function daysSince(date: string): number | null {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(date);
+  if (!match) return null;
+
+  const then = Date.UTC(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
+  const now = new Date();
+  const today = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate());
+
+  return Math.max(0, Math.floor((today - then) / 86400000));
+}
+
 export function todayLocal(): string {
   const now = new Date();
   const year = now.getFullYear();

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type FormEvent } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import SessionForm from '../components/SessionForm';
 import {
@@ -10,15 +10,177 @@ import {
   type PlanDayOption,
   type Session
 } from '../lib/api';
-import { daysLabel, formatDate, formatNumber, weightLabel } from '../lib/format';
+import { daysLabel, daysSince, formatDate, formatNumber, weightLabel } from '../lib/format';
 
-type Tab = 'ringkasan' | 'sesi';
+type Tab = 'ringkasan' | 'sesi' | 'profil';
 
 function topSetLabel(topSet: { berat: number | null; reps: number | null } | null) {
   if (!topSet) return '-';
   const berat = topSet.berat === null ? '-' : formatNumber(topSet.berat);
   const reps = topSet.reps === null ? '-' : topSet.reps;
   return `${berat} kg × ${reps}`;
+}
+
+function ProfileForm({ client, onSaved }: { client: Client; onSaved: () => void }) {
+  const [nama, setNama] = useState(client.nama);
+  const [berat, setBerat] = useState(client.beratBadan === null ? '' : String(client.beratBadan));
+  const [catatan, setCatatan] = useState(client.catatan);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    setNama(client.nama);
+    setBerat(client.beratBadan === null ? '' : String(client.beratBadan));
+    setCatatan(client.catatan);
+  }, [client]);
+
+  useEffect(() => {
+    if (!success) return;
+    const timer = window.setTimeout(() => setSuccess(false), 3000);
+    return () => window.clearTimeout(timer);
+  }, [success]);
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setError(null);
+    setSuccess(false);
+
+    const trimmedNama = nama.trim();
+    if (!trimmedNama) {
+      setError('Nama wajib diisi.');
+      return;
+    }
+
+    let beratBadan: number | null = null;
+    if (berat.trim() !== '') {
+      beratBadan = Number(berat.replace(',', '.'));
+      if (!Number.isFinite(beratBadan) || beratBadan <= 0) {
+        setError('Berat harus angka lebih dari 0, atau kosongkan.');
+        return;
+      }
+    }
+
+    setSubmitting(true);
+    try {
+      await api.updateClient(client.id, {
+        nama: trimmedNama,
+        beratBadan,
+        catatan: catatan.trim()
+      });
+      setSuccess(true);
+      onSaved();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Gagal menyimpan profil');
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  return (
+    <form className="stack-form" onSubmit={handleSubmit}>
+      <label>
+        Nama *
+        <input
+          type="text"
+          value={nama}
+          onChange={(event) => setNama(event.target.value)}
+          required
+        />
+      </label>
+
+      <label>
+        Berat badan (kg)
+        <input
+          type="text"
+          inputMode="decimal"
+          value={berat}
+          onChange={(event) => setBerat(event.target.value)}
+          placeholder="Opsional"
+        />
+      </label>
+
+      <label>
+        Catatan
+        <textarea
+          rows={3}
+          value={catatan}
+          onChange={(event) => setCatatan(event.target.value)}
+          placeholder="Opsional"
+        />
+      </label>
+
+      {error && (
+        <p className="form-error" role="alert">
+          {error}
+        </p>
+      )}
+      {success && (
+        <p className="form-success" role="status">
+          Profil tersimpan.
+        </p>
+      )}
+
+      <div className="form-actions">
+        <button type="submit" disabled={submitting}>
+          {submitting ? 'Menyimpan…' : 'Simpan profil'}
+        </button>
+      </div>
+    </form>
+  );
+}
+
+interface DeleteSessionModalProps {
+  session: Session;
+  busy: boolean;
+  error: string | null;
+  onCancel: () => void;
+  onConfirm: () => void;
+}
+
+function DeleteSessionModal({
+  session,
+  busy,
+  error,
+  onCancel,
+  onConfirm
+}: DeleteSessionModalProps) {
+  return (
+    <div
+      className="modal-overlay"
+      onMouseDown={(event) => {
+        if (event.target === event.currentTarget && !busy) onCancel();
+      }}
+    >
+      <div
+        className="card modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="delete-session-title"
+      >
+        <h2 id="delete-session-title">Hapus sesi?</h2>
+        <p>
+          Hapus sesi tanggal <strong>{formatDate(session.tanggal)}</strong>? Tindakan ini bisa
+          dipulihkan lewat database oleh admin.
+        </p>
+
+        {error && (
+          <p className="form-error" role="alert">
+            {error}
+          </p>
+        )}
+
+        <div className="form-actions">
+          <button type="button" className="secondary" onClick={onCancel} disabled={busy}>
+            Batal
+          </button>
+          <button type="button" className="danger" onClick={onConfirm} disabled={busy}>
+            {busy ? 'Menghapus…' : 'Hapus'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 export default function ClientDetail() {
@@ -28,6 +190,7 @@ export default function ClientDetail() {
 
   const [tab, setTab] = useState<Tab>('ringkasan');
   const [version, setVersion] = useState(0);
+  const [clientVersion, setClientVersion] = useState(0);
 
   const [client, setClient] = useState<Client | null>(null);
   const [clientError, setClientError] = useState<string | null>(null);
@@ -39,6 +202,14 @@ export default function ClientDetail() {
 
   const [sessions, setSessions] = useState<Session[] | null>(null);
   const [sessionsError, setSessionsError] = useState<string | null>(null);
+
+  const [editing, setEditing] = useState<Session | null>(null);
+  const [editError, setEditError] = useState<string | null>(null);
+  const [loadingEditId, setLoadingEditId] = useState<number | null>(null);
+
+  const [deleting, setDeleting] = useState<Session | null>(null);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [deleteBusy, setDeleteBusy] = useState(false);
 
   useEffect(() => {
     if (!validId) return;
@@ -66,7 +237,7 @@ export default function ClientDetail() {
     return () => {
       cancelled = true;
     };
-  }, [clientId, validId]);
+  }, [clientId, validId, clientVersion]);
 
   useEffect(() => {
     if (!validId) return;
@@ -109,6 +280,41 @@ export default function ClientDetail() {
       cancelled = true;
     };
   }, [clientId, validId, version]);
+
+  async function startEdit(sessionId: number) {
+    setLoadingEditId(sessionId);
+    setEditError(null);
+
+    try {
+      const data = await api.session(sessionId);
+      setEditing(data);
+      setTab('sesi');
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 401) return;
+      setEditError(err instanceof Error ? err.message : 'Gagal memuat sesi');
+    } finally {
+      setLoadingEditId(null);
+    }
+  }
+
+  async function handleDeleteSession() {
+    if (!deleting) return;
+
+    setDeleteError(null);
+    setDeleteBusy(true);
+
+    try {
+      await api.deleteSession(deleting.id);
+      if (editing?.id === deleting.id) setEditing(null);
+      setDeleting(null);
+      setVersion((current) => current + 1);
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 401) return;
+      setDeleteError(err instanceof Error ? err.message : 'Gagal menghapus sesi');
+    } finally {
+      setDeleteBusy(false);
+    }
+  }
 
   if (!validId) {
     return (
@@ -169,6 +375,15 @@ export default function ClientDetail() {
         >
           Sesi
         </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={tab === 'profil'}
+          className={tab === 'profil' ? 'tab active' : 'tab'}
+          onClick={() => setTab('profil')}
+        >
+          Profil
+        </button>
       </div>
 
       <div hidden={tab !== 'ringkasan'}>
@@ -189,7 +404,8 @@ export default function ClientDetail() {
               <div>
                 <h2>Sesi terakhir</h2>
                 <p className="muted">
-                  {formatDate(summary.session.tanggal)} · {daysLabel(summary.daysAgo)}
+                  {formatDate(summary.session.tanggal)} ·{' '}
+                  {daysLabel(daysSince(summary.session.tanggal))}
                 </p>
               </div>
             </div>
@@ -229,13 +445,39 @@ export default function ClientDetail() {
       </div>
 
       <div hidden={tab !== 'sesi'}>
-        <div className="card form-card">
+        {editError && (
+          <p className="form-error" role="alert">
+            {editError}
+          </p>
+        )}
+
+        {editing && (
+          <div className="card form-card">
+            <h2>Edit sesi {formatDate(editing.tanggal)}</h2>
+            <SessionForm
+              key={editing.id}
+              mode="edit"
+              initial={editing}
+              muscleGroups={muscleGroups}
+              planDays={planDays}
+              onSubmit={(payload) => api.updateSession(editing.id, payload)}
+              onSaved={() => {
+                setEditing(null);
+                setVersion((current) => current + 1);
+              }}
+              onCancel={() => setEditing(null)}
+            />
+          </div>
+        )}
+
+        <div className="card form-card" hidden={editing !== null}>
           <h2>Catat sesi baru</h2>
           <SessionForm
-            clientId={clientId}
+            mode="create"
             muscleGroups={muscleGroups}
             planDays={planDays}
-            onCreated={() => setVersion((current) => current + 1)}
+            onSubmit={(payload) => api.createSession(clientId, payload)}
+            onSaved={() => setVersion((current) => current + 1)}
           />
         </div>
 
@@ -252,12 +494,34 @@ export default function ClientDetail() {
             sessions.map((session) => (
               <article className="card session-card" key={session.id}>
                 <div className="session-head">
-                  <strong>{formatDate(session.tanggal)}</strong>
-                  <span className="muted">
-                    {session.muscles.length > 0
-                      ? session.muscles.map((muscle) => muscle.nama).join(', ')
-                      : 'Tanpa tag otot'}
-                  </span>
+                  <div>
+                    <strong>{formatDate(session.tanggal)}</strong>
+                    <div className="muted">
+                      {session.muscles.length > 0
+                        ? session.muscles.map((muscle) => muscle.nama).join(', ')
+                        : 'Tanpa tag otot'}
+                    </div>
+                  </div>
+                  <div className="session-actions">
+                    <button
+                      type="button"
+                      className="secondary"
+                      onClick={() => void startEdit(session.id)}
+                      disabled={loadingEditId === session.id}
+                    >
+                      {loadingEditId === session.id ? 'Memuat…' : 'Edit'}
+                    </button>
+                    <button
+                      type="button"
+                      className="danger"
+                      onClick={() => {
+                        setDeleteError(null);
+                        setDeleting(session);
+                      }}
+                    >
+                      Hapus
+                    </button>
+                  </div>
                 </div>
 
                 {session.exercises.map((exercise) => (
@@ -281,6 +545,27 @@ export default function ClientDetail() {
             ))}
         </div>
       </div>
+
+      <div hidden={tab !== 'profil'}>
+        <div className="card form-card">
+          <h2>Profil klien</h2>
+          <ProfileForm client={client} onSaved={() => setClientVersion((current) => current + 1)} />
+        </div>
+      </div>
+
+      {deleting && (
+        <DeleteSessionModal
+          session={deleting}
+          busy={deleteBusy}
+          error={deleteError}
+          onCancel={() => {
+            if (deleteBusy) return;
+            setDeleting(null);
+            setDeleteError(null);
+          }}
+          onConfirm={() => void handleDeleteSession()}
+        />
+      )}
     </section>
   );
 }
