@@ -2,6 +2,7 @@ import { serve } from '@hono/node-server';
 import { Hono } from 'hono';
 import { login, logout, me, requireAuth } from './auth.js';
 import clients from './clients.js';
+import plans from './plans.js';
 
 const app = new Hono();
 
@@ -20,6 +21,7 @@ app.post('/api/auth/login', login);
 app.post('/api/auth/logout', logout);
 app.get('/api/me', me);
 app.route('/api/clients', clients);
+app.route('/api', plans);
 
 const port = Number(process.env.PORT || 3000);
 const hostname = process.env.HOST || '127.0.0.1';
