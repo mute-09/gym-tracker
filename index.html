@@ -947,6 +947,243 @@
             border-color: var(--danger);
         }
 
+        /* Report / Laporan */
+        .report-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .report-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .report-filters {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .report-filters .save-plan-btn {
+            margin-top: 0;
+        }
+
+        .report-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+        }
+
+        .report-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 1rem;
+            padding: 1.25rem;
+        }
+
+        .report-card h3 {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 0.85rem;
+        }
+
+        .report-table-wrap {
+            overflow-x: auto;
+        }
+
+        .report-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.8rem;
+        }
+
+        .report-table th,
+        .report-table td {
+            padding: 0.5rem 0.6rem;
+            border-bottom: 1px solid var(--border);
+            text-align: left;
+            white-space: nowrap;
+        }
+
+        .report-table th {
+            font-size: 0.68rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-secondary);
+        }
+
+        .report-table td.num,
+        .report-table th.num {
+            text-align: right;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .report-table tbody tr:hover {
+            background: var(--bg-hover);
+        }
+
+        .report-table tr.report-row-empty td {
+            color: var(--text-secondary);
+        }
+
+        .delta-up {
+            color: var(--secondary);
+            font-weight: 600;
+        }
+
+        .delta-down {
+            color: var(--danger);
+            font-weight: 600;
+        }
+
+        .delta-flat {
+            color: var(--text-secondary);
+        }
+
+        .chart-svg {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .chart-bar {
+            fill: var(--primary);
+        }
+
+        .chart-bar.zero {
+            fill: var(--bg-hover);
+        }
+
+        .chart-label {
+            fill: var(--text-secondary);
+            font-size: 9px;
+        }
+
+        .chart-value {
+            fill: var(--text);
+            font-size: 9px;
+            font-weight: 600;
+        }
+
+        .session-card {
+            background: var(--bg-dark);
+            border: 1px solid var(--border);
+            border-radius: 0.75rem;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .session-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-bottom: 0.6rem;
+        }
+
+        .session-title {
+            font-size: 0.9rem;
+            font-weight: 700;
+        }
+
+        .session-meta {
+            font-size: 0.72rem;
+            color: var(--text-secondary);
+            margin-top: 0.15rem;
+        }
+
+        .session-badges {
+            display: flex;
+            gap: 0.35rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .session-badge {
+            font-size: 0.65rem;
+            font-weight: 600;
+            padding: 0.15rem 0.5rem;
+            border-radius: 999px;
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+        }
+
+        .session-badge.done {
+            color: var(--secondary);
+            border-color: var(--secondary);
+            background: rgba(34, 197, 94, 0.12);
+        }
+
+        .session-exercise {
+            display: flex;
+            justify-content: space-between;
+            gap: 1rem;
+            flex-wrap: wrap;
+            font-size: 0.78rem;
+            padding: 0.35rem 0;
+            border-top: 1px dashed var(--border);
+        }
+
+        .session-exercise:first-of-type {
+            border-top: none;
+        }
+
+        .session-sets {
+            color: var(--text-secondary);
+            font-variant-numeric: tabular-nums;
+            text-align: right;
+        }
+
+        .report-empty {
+            padding: 2rem;
+            text-align: center;
+            color: var(--text-secondary);
+            background: var(--bg-dark);
+            border: 1px dashed var(--border);
+            border-radius: 0.75rem;
+        }
+
+        @media print {
+            :root {
+                --bg-dark: #ffffff;
+                --bg-light: #ffffff;
+                --bg-card: #ffffff;
+                --bg-hover: #f1f5f9;
+                --text: #0f172a;
+                --text-secondary: #475569;
+                --border: #cbd5e1;
+                --primary: #1d4ed8;
+                --secondary: #15803d;
+                --danger: #b91c1c;
+            }
+
+            header,
+            .report-filters button,
+            .report-filters select,
+            #toast {
+                display: none !important;
+            }
+
+            .main-container {
+                max-width: none;
+                margin: 0;
+                padding: 0;
+            }
+
+            .report-card,
+            .session-card {
+                break-inside: avoid;
+            }
+        }
+
         /* Responsive */
         @media (max-width: 1400px) {
             .main-container {
@@ -1193,8 +1430,9 @@
                 Gym Tracker
             </div>
             <div class="nav-tabs">
-                <button class="tab-btn active" onclick="switchTab('dashboard')" data-i18n="tab_dashboard">Dashboard</button>
-                <button class="tab-btn" onclick="switchTab('planner')" data-i18n="tab_planner">Plan Editor</button>
+                <button class="tab-btn active" data-tab="dashboard" onclick="switchTab('dashboard')" data-i18n="tab_dashboard">Dashboard</button>
+                <button class="tab-btn" data-tab="report" onclick="switchTab('report')" data-i18n="tab_report">Laporan</button>
+                <button class="tab-btn" data-tab="planner" onclick="switchTab('planner')" data-i18n="tab_planner">Plan Editor</button>
             </div>
             <div class="lang-toggle" role="group" aria-label="Language">
                 <button class="lang-btn" data-lang="en" onclick="setLang('en')">EN</button>
@@ -1233,6 +1471,8 @@
                             <div class="stat-label" data-i18n="stat_total_volume">Total Volume</div>
                         </div>
                     </div>
+
+                    <button class="save-plan-btn" style="width: 100%; margin-top: 0; margin-bottom: 1rem;" onclick="switchTab('report')" data-i18n="btn_open_report">Lihat Laporan</button>
 
                     <div style="margin-top: 2rem;">
                         <h3 style="margin-bottom: 1rem; font-size: 0.875rem; color: var(--text-secondary);" data-i18n="current_week_title">Current Week</h3>
@@ -1359,6 +1599,49 @@
                 <button class="save-plan-btn" onclick="savePlan()" data-i18n="save_program">Simpan Program</button>
             </div>
         </div>
+
+        <div id="report" class="tab-content">
+            <div class="report-grid">
+                <div class="report-header">
+                    <div>
+                        <h2 style="font-size: 1.5rem; font-weight: 600;" data-i18n="report_title">Laporan Latihan</h2>
+                        <p style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.3rem; max-width: 52rem;" data-i18n="report_subtitle">Semua set yang pernah kamu catat, lengkap dengan tanggal, volume, dan riwayat sesi.</p>
+                    </div>
+                    <div class="report-filters">
+                        <select id="reportWeekFilter" class="plan-selector" onchange="renderReport()" aria-label="Filter minggu" data-i18n-attr="aria-label:report_filter_week"></select>
+                        <select id="reportExerciseFilter" class="plan-selector" onchange="renderReport()" aria-label="Filter latihan" data-i18n-attr="aria-label:report_filter_exercise"></select>
+                        <button class="save-plan-btn" onclick="exportReportCsv()" data-i18n="btn_export_csv">Ekspor CSV</button>
+                        <button class="save-plan-btn" onclick="window.print()" data-i18n="btn_print">Cetak</button>
+                    </div>
+                </div>
+
+                <div class="report-stats" id="reportStats"></div>
+
+                <div class="report-card">
+                    <h3 data-i18n="report_chart_title">Volume per Minggu</h3>
+                    <div id="reportChart"></div>
+                </div>
+
+                <div class="report-card">
+                    <h3 data-i18n="report_weekly_title">Ringkasan Mingguan</h3>
+                    <div class="report-table-wrap">
+                        <table class="report-table" id="reportWeeklyTable"></table>
+                    </div>
+                </div>
+
+                <div class="report-card">
+                    <h3 data-i18n="report_exercise_title">Progres per Latihan</h3>
+                    <div class="report-table-wrap">
+                        <table class="report-table" id="reportExerciseTable"></table>
+                    </div>
+                </div>
+
+                <div class="report-card">
+                    <h3 data-i18n="report_sessions_title">Riwayat Sesi</h3>
+                    <div id="reportSessions"></div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <div id="toast" class="toast"></div>
@@ -1382,7 +1665,48 @@
             id: {
                 app_title: 'Gym Tracker - Program Athletic Lean',
                 tab_dashboard: 'Dashboard',
+                tab_report: 'Laporan',
                 tab_planner: 'Plan Editor',
+                btn_export_csv: 'Ekspor CSV',
+                btn_print: 'Cetak',
+                btn_open_report: 'Lihat Laporan',
+                report_title: 'Laporan Latihan',
+                report_subtitle: 'Semua set yang pernah kamu catat, lengkap dengan tanggal, volume, dan riwayat sesi.',
+                report_filter_week: 'Filter minggu',
+                report_filter_exercise: 'Filter latihan',
+                report_all_weeks: 'Semua minggu',
+                report_all_exercises: 'Semua latihan',
+                report_chart_title: 'Volume per Minggu',
+                report_weekly_title: 'Ringkasan Mingguan',
+                report_exercise_title: 'Progres per Latihan',
+                report_sessions_title: 'Riwayat Sesi',
+                report_stat_sessions: 'Sesi Tercatat',
+                report_stat_sets: 'Total Set',
+                report_stat_volume: 'Total Volume',
+                report_stat_avg_volume: 'Rata-rata Volume',
+                report_stat_completed: 'Hari Selesai',
+                report_stat_weeks_active: 'Minggu Aktif',
+                report_no_data: 'Belum ada catatan latihan. Isi bobot dan reps di Dashboard, lalu buka tab ini lagi.',
+                report_no_session: 'Tidak ada sesi tercatat untuk filter ini.',
+                report_unknown_date: 'Tanggal belum tercatat',
+                report_session_line: 'Minggu {w} · {day}',
+                report_week_short: 'M{n}',
+                report_export_done: 'Laporan CSV berhasil diekspor!',
+                report_export_empty: 'Tidak ada data untuk diekspor.',
+                col_week: 'Minggu',
+                col_day: 'Hari',
+                col_program: 'Program',
+                col_location: 'Lokasi',
+                col_sessions: 'Sesi',
+                col_days_done: 'Hari Selesai',
+                col_sets: 'Set',
+                col_volume: 'Volume (kg)',
+                col_delta: 'Delta Volume',
+                col_date: 'Tanggal',
+                col_best_set: 'Set Terbaik',
+                col_exercise: 'Latihan',
+                col_last_session: 'Sesi Terakhir',
+                col_trend: 'Tren',
                 progress_title: 'Progres Program',
                 progress_percent: '{n}% Selesai',
                 stat_total_workouts: 'Total Latihan',
@@ -1486,7 +1810,48 @@
             en: {
                 app_title: 'Gym Tracker - Athletic Lean Program',
                 tab_dashboard: 'Dashboard',
+                tab_report: 'Reports',
                 tab_planner: 'Plan Editor',
+                btn_export_csv: 'Export CSV',
+                btn_print: 'Print',
+                btn_open_report: 'View Report',
+                report_title: 'Workout Report',
+                report_subtitle: 'Every set you have ever logged, with dates, volume, and session history.',
+                report_filter_week: 'Filter week',
+                report_filter_exercise: 'Filter exercise',
+                report_all_weeks: 'All weeks',
+                report_all_exercises: 'All exercises',
+                report_chart_title: 'Volume per Week',
+                report_weekly_title: 'Weekly Summary',
+                report_exercise_title: 'Progress per Exercise',
+                report_sessions_title: 'Session History',
+                report_stat_sessions: 'Logged Sessions',
+                report_stat_sets: 'Total Sets',
+                report_stat_volume: 'Total Volume',
+                report_stat_avg_volume: 'Average Volume',
+                report_stat_completed: 'Days Done',
+                report_stat_weeks_active: 'Active Weeks',
+                report_no_data: 'No workout records yet. Enter weight and reps on the Dashboard, then open this tab again.',
+                report_no_session: 'No sessions logged for this filter.',
+                report_unknown_date: 'Date not recorded',
+                report_session_line: 'Week {w} · {day}',
+                report_week_short: 'W{n}',
+                report_export_done: 'CSV report exported successfully!',
+                report_export_empty: 'No data to export.',
+                col_week: 'Week',
+                col_day: 'Day',
+                col_program: 'Program',
+                col_location: 'Location',
+                col_sessions: 'Sessions',
+                col_days_done: 'Days Done',
+                col_sets: 'Sets',
+                col_volume: 'Volume (kg)',
+                col_delta: 'Volume Delta',
+                col_date: 'Date',
+                col_best_set: 'Best Set',
+                col_exercise: 'Exercise',
+                col_last_session: 'Last Session',
+                col_trend: 'Trend',
                 progress_title: 'Program Progress',
                 progress_percent: '{n}% Complete',
                 stat_total_workouts: 'Total Workouts',
@@ -1607,6 +1972,7 @@
             renderWeekGrid();
             renderWorkoutDay();
             updateDashboard();
+            renderReport();
             initPlanEditor();
             updateLangToggleUI();
         }
@@ -1813,16 +2179,19 @@
         function switchTab(tabName) {
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
             document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
-            
+
+            const button = document.querySelector(`.tab-btn[data-tab="${tabName}"]`);
+            const pane = document.getElementById(tabName);
+            if (button) button.classList.add('active');
+            if (pane) pane.classList.add('active');
+
             if (tabName === 'dashboard') {
-                document.querySelector('.tab-btn:nth-child(1)').classList.add('active');
-                document.getElementById('dashboard').classList.add('active');
                 updateDashboard();
                 renderWorkoutDay();
             } else if (tabName === 'planner') {
-                document.querySelector('.tab-btn:nth-child(2)').classList.add('active');
-                document.getElementById('planner').classList.add('active');
                 initPlanEditor();
+            } else if (tabName === 'report') {
+                renderReport();
             }
         }
 
@@ -2066,7 +2435,7 @@
 
                     if (dayData?.exercises) {
                         exercisesDone += Object.values(dayData.exercises).filter(ex => ex && ex.completed).length;
-                        totalVolume += dayData.volume || 0;
+                        totalVolume += dayVolumeFromExercises(dayData);
                     }
 
                     if (completedInAnyMode) {
@@ -2080,6 +2449,7 @@
             document.getElementById('totalWorkouts').textContent = totalWorkouts;
             document.getElementById('exercisesDone').textContent = exercisesDone;
             document.getElementById('weeklyVolume').textContent = totalVolume + 'kg';
+            document.getElementById('currentStreak').textContent = computeStreak();
             
             const progressPercent = completedDays > 0 ? Math.round((completedDays / (12 * 7)) * 100) : 0;
             document.getElementById('progressPercentText').textContent = t('progress_percent', { n: progressPercent });
@@ -2102,6 +2472,26 @@
             } else {
                 updateWeekInfo(weekPhaseMap['10-12']);
             }
+        }
+
+        // Volume satu hari dihitung ulang dari catatan set (bukan dari field volume
+        // lama yang bisa basi), supaya dashboard dan tab Laporan selalu sama.
+        function dayVolumeFromExercises(dayData) {
+            let volume = 0;
+            Object.values(dayData?.exercises || {}).forEach(exercise => {
+                if (!exercise) return;
+                const logs = (Array.isArray(exercise.setLogs) ? exercise.setLogs : []).filter(hasSetContent);
+                if (logs.length) {
+                    logs.forEach(setLog => { volume += setLogVolume(setLog); });
+                    return;
+                }
+                if (exercise.weight != null && exercise.weight !== '') {
+                    const weight = toNumber(exercise.weight);
+                    const reps = parseRepsNumber(exercise.reps);
+                    if (weight && reps) volume += weight * reps;
+                }
+            });
+            return volume;
         }
 
         function updateWeekInfo(info) {
@@ -2375,7 +2765,7 @@
                                             <div class="set-count-picker" style="margin-bottom: 0.5rem;">
                                                 <label style="font-size: 0.7rem; color: var(--text-secondary); display: block; margin-bottom: 0.2rem;">${t('input_sets')}</label>
                                                 <select oninput="updateExerciseData(${currentWeek}, ${currentDay}, '${exercise.id}', 'setCount', parseInt(this.value, 10)); renderWorkoutDay();" style="width: 100%; max-width: 140px; padding: 0.25rem; background: var(--bg-card); border: 1px solid var(--border); border-radius: 0.25rem; color: var(--text); font-size: 0.75rem;">
-                                                    ${[2,3,4,5,6].map(n => `<option value="${n}" ${n === chosenSetCount ? 'selected' : ''}>${n} Set</option>`).join('')}
+                                                    ${[1,2,3,4,5,6].map(n => `<option value="${n}" ${n === chosenSetCount ? 'selected' : ''}>${n} Set</option>`).join('')}
                                                 </select>
                                             </div>
                                             <div class="exercise-stats">
@@ -2742,9 +3132,26 @@
             if (!workoutData[key].exercises[exerciseId]) workoutData[key].exercises[exerciseId] = {};
             const exercise = workoutData[key].exercises[exerciseId];
             if (!Array.isArray(exercise.setLogs)) exercise.setLogs = [];
+
+            // Pastikan slot set ini ada. Tanpa ini, input pertama pada hari yang
+            // belum pernah tersimpan akan dibuang diam-diam (setLogs masih kosong).
+            while (exercise.setLogs.length <= setIndex) {
+                exercise.setLogs.push({ weight: '', reps: '' });
+            }
+
             const setLog = exercise.setLogs[setIndex];
             if (!setLog) return;
             setLog[field] = field === 'weight' ? (parseFloat(value) || 0) : value;
+
+            // Rekam waktu pencatatan supaya laporan punya tanggal (data lama dibiarkan apa adanya)
+            const now = new Date().toISOString();
+            if (!setLog.loggedAt) setLog.loggedAt = now;
+            exercise.lastLoggedAt = now;
+            if (!exercise.firstLoggedAt) exercise.firstLoggedAt = now;
+            const dayData = workoutData[key];
+            dayData.lastLoggedAt = now;
+            if (!dayData.firstLoggedAt) dayData.firstLoggedAt = now;
+
             recalculateDayVolume(key);
             saveData();
             updateDashboard();
@@ -2796,6 +3203,12 @@
             workoutData[key].location = locationMode;
             workoutData[key].progress = visible.length ? Math.round((completedCount / visible.length) * 100) : 0;
 
+            if (allCompleted) {
+                if (!workoutData[key].completedAt) workoutData[key].completedAt = new Date().toISOString();
+            } else {
+                delete workoutData[key].completedAt;
+            }
+
             saveData();
             renderWeekGrid();
             renderWorkoutDay();
@@ -2810,6 +3223,557 @@
             const visible = getExercisesForLocation(day, mode);
             if (visible.length === 0) return false;
             return visible.every(exercise => dayData.exercises[exercise.id]?.completed);
+        }
+
+        // ============================================================
+        // Laporan (Reports)
+        // Semua angka dihitung ulang dari setLogs yang sudah tersimpan,
+        // jadi catatan lama (tanpa timestamp) tetap ikut tampil.
+        // ============================================================
+
+        function reportLocale() {
+            return currentLang === 'id' ? 'id-ID' : 'en-US';
+        }
+
+        function toNumber(value) {
+            const parsed = parseFloat(value);
+            return isFinite(parsed) ? parsed : 0;
+        }
+
+        function formatNumber(value, maxFractionDigits = 1) {
+            return toNumber(value).toLocaleString(reportLocale(), { maximumFractionDigits: maxFractionDigits });
+        }
+
+        function formatVolume(value) {
+            return `${Math.round(toNumber(value)).toLocaleString(reportLocale())} kg`;
+        }
+
+        function formatTimestamp(value) {
+            if (!value) return t('report_unknown_date');
+            const date = new Date(value);
+            if (isNaN(date.getTime())) return t('report_unknown_date');
+            const day = date.toLocaleDateString(reportLocale(), { day: '2-digit', month: 'short', year: 'numeric' });
+            const time = date.toLocaleTimeString(reportLocale(), { hour: '2-digit', minute: '2-digit' });
+            return `${day} ${time}`;
+        }
+
+        function hasSetContent(setLog) {
+            if (!setLog) return false;
+            return toNumber(setLog.weight) > 0 || String(setLog.reps == null ? '' : setLog.reps).trim() !== '';
+        }
+
+        // Volume satu set: berat × reps
+        function setLogVolume(setLog) {
+            if (!setLog) return 0;
+            const weight = toNumber(setLog.weight);
+            const reps = parseRepsNumber(setLog.reps);
+            if (!weight || !reps) return 0;
+            return weight * reps;
+        }
+
+        function getSessionTimestamp(dayData) {
+            if (!dayData) return null;
+            const candidates = [dayData.completedAt, dayData.lastLoggedAt, dayData.firstLoggedAt];
+            for (const candidate of candidates) {
+                if (candidate) return candidate;
+            }
+            return null;
+        }
+
+        // Daftar sesi = hari yang punya minimal satu set tercatat atau sudah ditandai selesai
+        function collectSessions(options) {
+            const opts = options || {};
+            const exerciseNames = new Map(allExercises.map(exercise => [exercise.id, exercise.name]));
+            const exerciseOrder = new Map(allExercises.map((exercise, index) => [exercise.id, index]));
+            const sessions = [];
+
+            for (let week = 1; week <= 12; week++) {
+                if (opts.week && week !== opts.week) continue;
+                for (let day = 1; day <= 7; day++) {
+                    const key = `week${week}_day${day}`;
+                    const dayData = workoutData[key];
+                    if (!dayData || !dayData.exercises) continue;
+
+                    const entries = [];
+                    Object.keys(dayData.exercises).forEach(exerciseId => {
+                        const exerciseData = dayData.exercises[exerciseId];
+                        if (!exerciseData) return;
+                        let sets = (Array.isArray(exerciseData.setLogs) ? exerciseData.setLogs : []).filter(hasSetContent);
+
+                        // Catatan format lama hanya punya satu pasang berat/reps per latihan
+                        if (!sets.length && exerciseData.weight != null && exerciseData.weight !== ''
+                            && (toNumber(exerciseData.weight) > 0 || String(exerciseData.reps == null ? '' : exerciseData.reps).trim() !== '')) {
+                            sets = [{ weight: exerciseData.weight, reps: exerciseData.reps, legacy: true }];
+                        }
+
+                        const completed = !!exerciseData.completed;
+                        if (!sets.length && !completed) return;
+                        entries.push({
+                            id: exerciseId,
+                            name: exerciseNames.get(exerciseId) || exerciseData.name || exerciseId,
+                            sets,
+                            volume: sets.reduce((sum, setLog) => sum + setLogVolume(setLog), 0),
+                            completed
+                        });
+                    });
+
+                    entries.sort((a, b) => (exerciseOrder.get(a.id) || 0) - (exerciseOrder.get(b.id) || 0));
+
+                    const completed = isDayComplete(week, day);
+                    if (!entries.length && !completed) continue;
+
+                    sessions.push({
+                        week,
+                        day,
+                        key,
+                        program: getProgramForDay(day),
+                        location: dayData.location || null,
+                        completed,
+                        timestamp: getSessionTimestamp(dayData),
+                        totalSets: entries.reduce((sum, entry) => sum + entry.sets.length, 0),
+                        volume: entries.reduce((sum, entry) => sum + entry.volume, 0),
+                        exercises: entries
+                    });
+                }
+            }
+
+            return sessions;
+        }
+
+        // Hari latihan berurutan yang selesai, dihitung mundur dari hari selesai terakhir
+        function computeStreak() {
+            let streak = 0;
+            let started = false;
+            for (let week = 12; week >= 1; week--) {
+                for (let day = 7; day >= 1; day--) {
+                    if (isDayComplete(week, day)) {
+                        streak += 1;
+                        started = true;
+                    } else if (started) {
+                        return streak;
+                    }
+                }
+            }
+            return streak;
+        }
+
+        function buildWeeklySummary(sessions) {
+            const weeks = [];
+            for (let week = 1; week <= 12; week++) {
+                const weekSessions = sessions.filter(session => session.week === week);
+                weeks.push({
+                    week,
+                    sessions: weekSessions.length,
+                    completedDays: weekSessions.filter(session => session.completed).length,
+                    totalSets: weekSessions.reduce((sum, session) => sum + session.totalSets, 0),
+                    volume: weekSessions.reduce((sum, session) => sum + session.volume, 0),
+                    lastTimestamp: weekSessions.reduce((latest, session) => {
+                        if (!session.timestamp) return latest;
+                        if (!latest || session.timestamp > latest) return session.timestamp;
+                        return latest;
+                    }, null)
+                });
+            }
+            return weeks;
+        }
+
+        function renderDelta(current, previous) {
+            if (previous == null || previous === 0) return `<span class="delta-flat">—</span>`;
+            const difference = current - previous;
+            if (Math.abs(difference) < 0.5) return `<span class="delta-flat">—</span>`;
+            const percent = Math.round((difference / previous) * 100);
+            const sign = difference > 0 ? '+' : '−';
+            const className = difference > 0 ? 'delta-up' : 'delta-down';
+            return `<span class="${className}">${sign}${formatNumber(Math.abs(difference), 0)} kg (${sign}${Math.abs(percent)}%)</span>`;
+        }
+
+        function renderVolumeChart(weeks) {
+            const container = document.getElementById('reportChart');
+            if (!container) return;
+
+            const maxVolume = Math.max(1, ...weeks.map(week => week.volume));
+            const barWidth = 30;
+            const gap = 14;
+            const chartHeight = 130;
+            const padTop = 20;
+            const padLeft = 10;
+            const chartWidth = padLeft * 2 + weeks.length * (barWidth + gap);
+
+            const bars = weeks.map((week, index) => {
+                const height = Math.round((week.volume / maxVolume) * chartHeight);
+                const x = padLeft + index * (barWidth + gap);
+                const y = padTop + (chartHeight - height);
+                const label = t('report_week_short', { n: week.week });
+                return `
+                    <g>
+                        <rect class="chart-bar${week.volume ? '' : ' zero'}" x="${x}" y="${y}" width="${barWidth}" height="${Math.max(2, height)}" rx="4"></rect>
+                        ${week.volume ? `<text class="chart-value" x="${x + barWidth / 2}" y="${Math.max(10, y - 5)}" text-anchor="middle">${Math.round(week.volume)}</text>` : ''}
+                        <text class="chart-label" x="${x + barWidth / 2}" y="${padTop + chartHeight + 15}" text-anchor="middle">${escapeHtml(label)}</text>
+                    </g>`;
+            }).join('');
+
+            container.innerHTML = `
+                <svg class="chart-svg" viewBox="0 0 ${chartWidth} ${padTop + chartHeight + 26}" role="img" aria-label="${escapeHtml(t('report_chart_title'))}">
+                    ${bars}
+                </svg>`;
+        }
+
+        function renderWeeklyTable(weeks) {
+            const table = document.getElementById('reportWeeklyTable');
+            if (!table) return;
+
+            const rows = weeks.map((week, index) => {
+                const previous = index > 0 ? weeks[index - 1].volume : null;
+                const delta = week.sessions ? renderDelta(week.volume, previous) : `<span class="delta-flat">—</span>`;
+                return `
+                    <tr class="${week.sessions ? '' : 'report-row-empty'}">
+                        <td>${escapeHtml(t('week_option', { n: week.week }))}</td>
+                        <td class="num">${week.completedDays}/7</td>
+                        <td class="num">${week.sessions}</td>
+                        <td class="num">${week.totalSets}</td>
+                        <td class="num">${escapeHtml(formatVolume(week.volume))}</td>
+                        <td class="num">${delta}</td>
+                        <td>${escapeHtml(week.lastTimestamp ? formatTimestamp(week.lastTimestamp) : '—')}</td>
+                    </tr>`;
+            }).join('');
+
+            table.innerHTML = `
+                <thead>
+                    <tr>
+                        <th>${escapeHtml(t('col_week'))}</th>
+                        <th class="num">${escapeHtml(t('col_days_done'))}</th>
+                        <th class="num">${escapeHtml(t('col_sessions'))}</th>
+                        <th class="num">${escapeHtml(t('col_sets'))}</th>
+                        <th class="num">${escapeHtml(t('col_volume'))}</th>
+                        <th class="num">${escapeHtml(t('col_delta'))}</th>
+                        <th>${escapeHtml(t('col_date'))}</th>
+                    </tr>
+                </thead>
+                <tbody>${rows}</tbody>`;
+        }
+
+        function buildExerciseAggregates(sessions) {
+            const map = new Map();
+
+            sessions.forEach(session => {
+                session.exercises.forEach(entry => {
+                    let aggregate = map.get(entry.name);
+                    if (!aggregate) {
+                        aggregate = {
+                            name: entry.name,
+                            sessions: 0,
+                            totalSets: 0,
+                            volume: 0,
+                            bestWeight: 0,
+                            bestReps: '',
+                            lastTimestamp: null,
+                            history: []
+                        };
+                        map.set(entry.name, aggregate);
+                    }
+
+                    aggregate.sessions += 1;
+                    aggregate.totalSets += entry.sets.length;
+                    aggregate.volume += entry.volume;
+
+                    entry.sets.forEach(setLog => {
+                        const weight = toNumber(setLog.weight);
+                        if (weight > aggregate.bestWeight) {
+                            aggregate.bestWeight = weight;
+                            aggregate.bestReps = setLog.reps == null ? '' : String(setLog.reps);
+                        }
+                    });
+
+                    if (session.timestamp && (!aggregate.lastTimestamp || session.timestamp > aggregate.lastTimestamp)) {
+                        aggregate.lastTimestamp = session.timestamp;
+                    }
+
+                    aggregate.history.push({ timestamp: session.timestamp, volume: entry.volume, week: session.week, day: session.day, sets: entry.sets.length });
+                });
+            });
+
+            return Array.from(map.values()).sort((a, b) => a.name.localeCompare(b.name, 'id', { sensitivity: 'base' }));
+        }
+
+        function formatBestSet(weight, reps) {
+            if (!weight) return '—';
+            const repsText = String(reps == null ? '' : reps).trim();
+            return repsText ? `${formatNumber(weight)} kg × ${escapeHtml(repsText)}` : `${formatNumber(weight)} kg`;
+        }
+
+        function renderExerciseTable(sessions, selectedExercise) {
+            const table = document.getElementById('reportExerciseTable');
+            if (!table) return;
+
+            const aggregates = buildExerciseAggregates(sessions);
+
+            if (!aggregates.length) {
+                table.innerHTML = `<tbody><tr class="report-row-empty"><td>${escapeHtml(t('report_no_session'))}</td></tr></tbody>`;
+                return;
+            }
+
+            let header = '';
+            let rows = '';
+
+            if (selectedExercise) {
+                const aggregate = aggregates.find(item => item.name === selectedExercise);
+                const history = aggregate ? aggregate.history : [];
+                header = `
+                    <tr>
+                        <th>${escapeHtml(t('col_week'))}</th>
+                        <th>${escapeHtml(t('col_date'))}</th>
+                        <th class="num">${escapeHtml(t('col_sets'))}</th>
+                        <th class="num">${escapeHtml(t('col_volume'))}</th>
+                        <th class="num">${escapeHtml(t('col_delta'))}</th>
+                    </tr>`;
+
+                rows = history.map((entry, index) => {
+                    const previous = index > 0 ? history[index - 1].volume : null;
+                    return `
+                        <tr>
+                            <td>${escapeHtml(t('week_option', { n: entry.week }))}</td>
+                            <td>${escapeHtml(entry.timestamp ? formatTimestamp(entry.timestamp) : '—')}</td>
+                            <td class="num">${entry.sets}</td>
+                            <td class="num">${escapeHtml(formatVolume(entry.volume))}</td>
+                            <td class="num">${renderDelta(entry.volume, previous)}</td>
+                        </tr>`;
+                }).join('');
+            } else {
+                header = `
+                    <tr>
+                        <th>${escapeHtml(t('col_exercise'))}</th>
+                        <th class="num">${escapeHtml(t('col_sessions'))}</th>
+                        <th class="num">${escapeHtml(t('col_sets'))}</th>
+                        <th class="num">${escapeHtml(t('col_volume'))}</th>
+                        <th>${escapeHtml(t('col_best_set'))}</th>
+                        <th>${escapeHtml(t('col_last_session'))}</th>
+                        <th class="num">${escapeHtml(t('col_trend'))}</th>
+                    </tr>`;
+
+                rows = aggregates.map(aggregate => {
+                    const history = aggregate.history;
+                    const last = history.length ? history[history.length - 1].volume : 0;
+                    const previous = history.length > 1 ? history[history.length - 2].volume : null;
+                    return `
+                        <tr>
+                            <td>${escapeHtml(aggregate.name)}</td>
+                            <td class="num">${aggregate.sessions}</td>
+                            <td class="num">${aggregate.totalSets}</td>
+                            <td class="num">${escapeHtml(formatVolume(aggregate.volume))}</td>
+                            <td>${formatBestSet(aggregate.bestWeight, aggregate.bestReps)}</td>
+                            <td>${escapeHtml(aggregate.lastTimestamp ? formatTimestamp(aggregate.lastTimestamp) : '—')}</td>
+                            <td class="num">${renderDelta(last, previous)}</td>
+                        </tr>`;
+                }).join('');
+            }
+
+            table.innerHTML = `<thead>${header}</thead><tbody>${rows}</tbody>`;
+        }
+
+        function renderSessionHistory(sessions) {
+            const container = document.getElementById('reportSessions');
+            if (!container) return;
+
+            if (!sessions.length) {
+                container.innerHTML = `<div class="report-empty">${escapeHtml(t('report_no_session'))}</div>`;
+                return;
+            }
+
+            const ordered = sessions.slice().sort((a, b) => {
+                if (a.timestamp && b.timestamp && a.timestamp !== b.timestamp) {
+                    return a.timestamp < b.timestamp ? 1 : -1;
+                }
+                if (a.week !== b.week) return b.week - a.week;
+                return b.day - a.day;
+            });
+
+            container.innerHTML = ordered.map(session => {
+                const locationLabel = session.location === 'gym'
+                    ? t('mode_gym')
+                    : (session.location === 'home' ? t('mode_home') : '');
+
+                const exerciseRows = session.exercises.map(entry => {
+                    const setsText = entry.sets.length
+                        ? entry.sets.map(setLog => `${formatNumber(setLog.weight)}×${escapeHtml(String(setLog.reps == null || setLog.reps === '' ? '–' : setLog.reps))}`).join(' · ')
+                        : t('status_done');
+                    const volumeText = entry.volume ? ` = ${escapeHtml(formatVolume(entry.volume))}` : '';
+                    return `
+                        <div class="session-exercise">
+                            <span>${escapeHtml(entry.name)}</span>
+                            <span class="session-sets">${setsText}${volumeText}</span>
+                        </div>`;
+                }).join('');
+
+                return `
+                    <div class="session-card">
+                        <div class="session-head">
+                            <div>
+                                <div class="session-title">${escapeHtml(t('report_session_line', { w: session.week, day: getDayNameFromNumber(session.day) }))} · ${escapeHtml(session.program)}</div>
+                                <div class="session-meta">${escapeHtml(formatTimestamp(session.timestamp))}${locationLabel ? ' · ' + escapeHtml(locationLabel) : ''}</div>
+                            </div>
+                            <div class="session-badges">
+                                <span class="session-badge${session.completed ? ' done' : ''}">${escapeHtml(session.completed ? t('status_done') : t('status_pending'))}</span>
+                                <span class="session-badge">${escapeHtml(t('col_sets'))}: ${session.totalSets}</span>
+                                <span class="session-badge">${escapeHtml(formatVolume(session.volume))}</span>
+                            </div>
+                        </div>
+                        ${exerciseRows}
+                    </div>`;
+            }).join('');
+        }
+
+        function renderReportStats(sessions) {
+            const container = document.getElementById('reportStats');
+            if (!container) return;
+
+            const totalSets = sessions.reduce((sum, session) => sum + session.totalSets, 0);
+            const totalVolume = sessions.reduce((sum, session) => sum + session.volume, 0);
+            const completedDays = sessions.filter(session => session.completed).length;
+            const averageVolume = sessions.length ? totalVolume / sessions.length : 0;
+            const activeWeeks = new Set(sessions.map(session => session.week)).size;
+
+            const stats = [
+                { value: String(sessions.length), label: t('report_stat_sessions') },
+                { value: String(totalSets), label: t('report_stat_sets') },
+                { value: formatVolume(totalVolume), label: t('report_stat_volume') },
+                { value: formatVolume(averageVolume), label: t('report_stat_avg_volume') },
+                { value: `${completedDays}/84`, label: t('report_stat_completed') },
+                { value: `${activeWeeks}/12`, label: t('report_stat_weeks_active') },
+                { value: String(computeStreak()), label: t('stat_streak') }
+            ];
+
+            container.innerHTML = stats.map(stat => `
+                <div class="stat-card">
+                    <div class="stat-value">${escapeHtml(stat.value)}</div>
+                    <div class="stat-label">${escapeHtml(stat.label)}</div>
+                </div>`).join('');
+        }
+
+        function renderReport() {
+            const statsContainer = document.getElementById('reportStats');
+            if (!statsContainer) return;
+
+            const weekSelect = document.getElementById('reportWeekFilter');
+            const previousWeek = weekSelect ? weekSelect.value : '0';
+            if (weekSelect) {
+                let options = `<option value="0">${escapeHtml(t('report_all_weeks'))}</option>`;
+                for (let week = 1; week <= 12; week++) {
+                    options += `<option value="${week}">${escapeHtml(t('week_option', { n: week }))}</option>`;
+                }
+                weekSelect.innerHTML = options;
+                weekSelect.value = previousWeek || '0';
+            }
+            const selectedWeek = weekSelect ? parseInt(weekSelect.value || '0', 10) : 0;
+
+            const allSessions = collectSessions({});
+            const sessions = selectedWeek ? allSessions.filter(session => session.week === selectedWeek) : allSessions;
+
+            const exerciseSelect = document.getElementById('reportExerciseFilter');
+            const previousExercise = exerciseSelect ? exerciseSelect.value : '';
+            const exerciseNames = Array.from(new Set(allSessions.flatMap(session => session.exercises.map(entry => entry.name))))
+                .sort((a, b) => a.localeCompare(b, 'id', { sensitivity: 'base' }));
+            if (exerciseSelect) {
+                let options = `<option value="">${escapeHtml(t('report_all_exercises'))}</option>`;
+                options += exerciseNames.map(name => `<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>`).join('');
+                exerciseSelect.innerHTML = options;
+                exerciseSelect.value = exerciseNames.includes(previousExercise) ? previousExercise : '';
+            }
+            const selectedExercise = exerciseSelect ? exerciseSelect.value : '';
+
+            renderReportStats(sessions);
+            renderVolumeChart(buildWeeklySummary(allSessions));
+            renderWeeklyTable(buildWeeklySummary(allSessions));
+            renderExerciseTable(sessions, selectedExercise);
+            renderSessionHistory(sessions);
+        }
+
+        function csvRow(values) {
+            return values.map(value => {
+                const text = value == null ? '' : String(value);
+                return `"${text.replace(/"/g, '""')}"`;
+            }).join(',');
+        }
+
+        function exportReportCsv() {
+            const weekSelect = document.getElementById('reportWeekFilter');
+            const selectedWeek = weekSelect ? parseInt(weekSelect.value || '0', 10) : 0;
+            const sessions = collectSessions({ week: selectedWeek || null });
+
+            if (!sessions.length) {
+                showToast(t('report_export_empty'), 'error');
+                return;
+            }
+
+            const lines = [csvRow([
+                t('col_week'),
+                t('col_date'),
+                t('col_day'),
+                t('col_program'),
+                t('col_location'),
+                t('col_exercise'),
+                t('col_sets'),
+                `${t('target_weight')} (kg)`,
+                t('col_reps'),
+                t('col_volume')
+            ])];
+
+            const ordered = sessions.slice().sort((a, b) => {
+                if (a.timestamp && b.timestamp && a.timestamp !== b.timestamp) {
+                    return a.timestamp < b.timestamp ? -1 : 1;
+                }
+                if (a.week !== b.week) return a.week - b.week;
+                return a.day - b.day;
+            });
+
+            ordered.forEach(session => {
+                const dateText = session.timestamp ? formatTimestamp(session.timestamp) : '';
+                const locationText = session.location === 'gym'
+                    ? t('mode_gym')
+                    : (session.location === 'home' ? t('mode_home') : '');
+
+                session.exercises.forEach(entry => {
+                    if (!entry.sets.length) {
+                        lines.push(csvRow([
+                            session.week,
+                            dateText,
+                            getDayNameFromNumber(session.day),
+                            session.program,
+                            locationText,
+                            entry.name,
+                            '',
+                            '',
+                            '',
+                            ''
+                        ]));
+                        return;
+                    }
+
+                    entry.sets.forEach((setLog, index) => {
+                        lines.push(csvRow([
+                            session.week,
+                            dateText,
+                            getDayNameFromNumber(session.day),
+                            session.program,
+                            locationText,
+                            entry.name,
+                            index + 1,
+                            toNumber(setLog.weight) || '',
+                            setLog.reps == null ? '' : setLog.reps,
+                            setLogVolume(setLog) || ''
+                        ]));
+                    });
+                });
+            });
+
+            const blob = new Blob(['\ufeff' + lines.join('\r\n')], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `gymtracker-laporan-${new Date().toISOString().slice(0, 10)}.csv`;
+            link.click();
+            setTimeout(() => URL.revokeObjectURL(url), 1000);
+
+            showToast(t('report_export_done'), 'success');
         }
 
         // Load saved plan (migrating legacy data if needed)

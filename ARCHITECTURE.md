@@ -13,6 +13,9 @@ Gym Tracker adalah aplikasi catatan latihan gym 12 minggu ("Athletic Lean Progra
 - Catat berat dan repetisi per set untuk setiap latihan.
 - Tandai latihan/hari sebagai selesai.
 - Lihat progres (persentase, streak, total volume).
+- Lihat **laporan** di tab "Laporan": semua sesi yang pernah dicatat beserta tanggalnya,
+  grafik volume per minggu, ringkasan mingguan, progres per latihan, dan riwayat sesi.
+  Laporan bisa difilter per minggu/latihan, diekspor ke CSV, atau dicetak.
 - Edit program latihan di tab "Plan Editor".
 - Cadangkan & pulihkan data lewat file JSON (Ekspor/Impor).
 
@@ -65,6 +68,15 @@ Aplikasi dibagi menjadi dua tab:
 - Tambah/hapus/pindah urutan latihan.
 - Simpan program ke `localStorage`.
 
+### Tab "Laporan"
+Semua angka di tab ini **dihitung ulang dari `setLogs`**, bukan dari field `volume`
+yang tersimpan, jadi laporan selalu konsisten dengan catatan set terakhir.
+Isinya: kartu ringkasan (sesi, set, volume, rata-rata volume, hari selesai, minggu aktif,
+streak), grafik batang volume per minggu (SVG, dibuat di `renderVolumeChart`),
+tabel ringkasan mingguan, tabel progres per latihan (semua latihan atau satu latihan),
+dan daftar riwayat sesi terbaru. Ada filter minggu + filter latihan, tombol
+**Ekspor CSV** dan **Cetak** (ada CSS `@media print`).
+
 ---
 
 ## 5. Struktur Data (Penting untuk Pengembang)
@@ -84,21 +96,35 @@ Isi tiap hari:
     "ex_1_1730000000000": {
       completed: true,        // latihan ini ditandai selesai
       setLogs: [              // catatan per set
-        { weight: 20, reps: 10 },
-        { weight: 22, reps: 10 },
-        { weight: 25, reps: 8 }
+        { weight: 20, reps: 10, loggedAt: '2026-01-12T11:15:00.000Z' },
+        { weight: 22, reps: 10, loggedAt: '2026-01-12T11:21:00.000Z' },
+        { weight: 25, reps: 8,  loggedAt: '2026-01-12T11:28:00.000Z' }
       ],
+      firstLoggedAt: '2026-01-12T11:15:00.000Z', // set pertama hari itu diisi
+      lastLoggedAt: '2026-01-12T11:28:00.000Z',  // perubahan terakhir
       weight: '',             // legacy (single weight, masih dipertahankan untuk kompatibilitas)
       sets: '',
       reps: ''
     }
   },
   completed: true,            // hari ditandai selesai (jika semua latihan dalam salah satu mode selesai)
+  completedAt: '2026-01-12T11:35:00.000Z', // kapan hari ditandai selesai
+  firstLoggedAt: '2026-01-12T11:15:00.000Z',
+  lastLoggedAt: '2026-01-12T11:28:00.000Z',
   location: 'gym',            // lokasi terakhir yang dipilih
   progress: 100,              // persentase progres hari ini
-  volume: 670                 // total volume (kg) hari ini
+  volume: 670                 // total volume (kg) hari ini (dihitung dari setLogs)
 }
 ```
+
+Catatan penting soal laporan:
+- Field `*LoggedAt` / `completedAt` diisi **hanya saat pengguna mengubah data**
+  (lihat `updateSetLog()` dan `toggleExerciseCompletion()`). Data lama yang belum punya
+  timestamp tetap tampil di laporan dengan tanggal "—", bukan dibuang.
+- Report membaca `setLogs`; kalau `setLogs` kosong tapi ada `weight`/`reps` gaya lama,
+  laporan menampilkannya sebagai satu set (lihat `collectSessions()`).
+- Jangan mengubah nama kunci `setLogs`, `firstLoggedAt`, `lastLoggedAt`, `completedAt`
+  tanpa migrasi: laporan dan `recalculateDayVolume()` bergantung padanya.
 
 Daftar semua latihan program tersimpan di variabel global `allExercises` dan disimpan ke `localStorage` kunci `gymTrackerPlan`:
 ```js
@@ -137,7 +163,12 @@ Berikut fungsi-fungsi utama di `index.html` yang sering akan kamu sentuh:
 | `getSetCount(prescription)` | Hitung jumlah set dari teks resep (mis. "3 × 8–12" → 3). |
 | `ensureSetLogs(exerciseData, setCount)` | Buat/migrasikan array `setLogs` agar panjangnya sama dengan jumlah set. |
 | `isDayComplete(week, day)` | Cek apakah suatu hari sudah selesai (level hari, bukan per lokasi). |
-| `switchTab(tabName)` | Pindah antara tab 'dashboard' dan 'planner'. |
+| `switchTab(tabName)` | Pindah antara tab 'dashboard', 'report', dan 'planner'. |
+| `collectSessions({week})` | Kumpulkan semua sesi tercatat (hari yang punya set/`completed`) untuk laporan. |
+| `renderReport()` | Render seluruh tab Laporan (statistik, chart, tabel, riwayat). Dipanggil saat tab dibuka. |
+| `computeStreak()` | Hitung hari selesai berurutan (dipakai dashboard & laporan). |
+| `dayVolumeFromExercises(dayData)` | Volume satu hari dihitung ulang dari `setLogs` (legacy `weight`/`reps` tetap dihitung). |
+| `exportReportCsv()` | Unduh laporan sebagai CSV (BOM UTF-8, aman dibuka di Excel). |
 
 ---
 
