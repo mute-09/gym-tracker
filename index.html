@@ -3384,7 +3384,7 @@
             const percent = Math.round((difference / previous) * 100);
             const sign = difference > 0 ? '+' : '−';
             const className = difference > 0 ? 'delta-up' : 'delta-down';
-            return `<span class="${className}">${sign}${formatNumber(Math.abs(difference))} kg (${sign}${Math.abs(percent)}%)</span>`;
+            return `<span class="${className}">${sign}${formatNumber(Math.abs(difference), 0)} kg (${sign}${Math.abs(percent)}%)</span>`;
         }
 
         function renderVolumeChart(weeks) {
